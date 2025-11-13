@@ -89,6 +89,12 @@ module Tmdb
     def perform_request(uri)
       http = Net::HTTP.new(uri.host, uri.port)
       http.use_ssl = uri.scheme == "https"
+
+      #  relax SSL when enabled so we can record VCR cassettes
+      if ENV["TMDB_RELAX_SSL"] == "1"
+        http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+      end
+
       http.open_timeout = 5
       http.read_timeout = 5
 
@@ -101,6 +107,7 @@ module Tmdb
     rescue SocketError => error
       raise Error, "TMDB connection failed: #{error.message}"
     end
+
 
     def parse_response(response)
       case response
