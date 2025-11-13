@@ -1,0 +1,17 @@
+{
+  "name": "csce-606-700-group-9-project-3",
+  "version": "1.0.0",
+  "description": "This README would normally document whatever steps are necessary to get the application up and running.",
+  "scripts": {
+    "build": "tailwindcss -i ./app/assets/stylesheets/application.css -o ./app/assets/builds/application.css --minify",
+    "watch": "tailwindcss -i ./app/assets/stylesheets/application.css -o ./app/assets/builds/application.css --watch --color",
+    "dev": "npm run watch"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.1.17",
+    "tailwindcss": "^4.1.0"
+  }
+}
