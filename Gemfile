@@ -51,6 +51,8 @@ group :development, :test do
   gem "rubocop-rails-omakase", require: false
 
   gem "rspec-rails"
+  gem "factory_bot_rails"
+  gem "faker"
 end
 
 group :development do
@@ -65,4 +67,6 @@ group :test do
   gem "selenium-webdriver"
   gem "vcr"
   gem "webmock"
+  gem "simplecov", require: false
+  gem "simplecov-cobertura", require: false
 end
