@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+run_suite() {
+  local label=$1
+  shift
+  local binary=$1
+  shift
+
+  if bundle exec which "$binary" >/dev/null 2>&1; then
+    echo "==> Running ${label}"
+    bundle exec "$binary" "$@"
+  else
+    echo "==> Skipping ${label} (missing $binary)"
+  fi
+}
+
+run_suite "RSpec" rspec
+run_suite "Cucumber" cucumber
+run_suite "RuboCop (autocorrect)" rubocop -a
+
+if [[ -f coverage/index.html ]]; then
+  if command -v open >/dev/null 2>&1; then
+    echo "==> Opening coverage report"
+    open coverage/index.html
+  else
+    echo "==> Coverage report available at coverage/index.html"
+  fi
+fi
