@@ -5,7 +5,7 @@ require "rails_helper"
 RSpec.describe Tmdb::Client do
   let(:client) do
     described_class.new(
-      api_key: Rails.application.config.x.tmdb.api_key,
+      api_key: ENV.fetch("TMDB_API_KEY", "test_api_key"),
       request_interval: 0
     )
   end
