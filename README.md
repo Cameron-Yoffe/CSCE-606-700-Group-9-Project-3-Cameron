@@ -1,24 +1,29 @@
 # README
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+## Development setup
 
-Things you may want to cover:
+Run everything with a single command:
 
-* Ruby version
+```bash
+bin/setup
+```
 
-* System dependencies
+This installs Ruby gems, installs npm packages (for Tailwind), prepares the database, clears temp files, and boots the dev server (pass `--skip-server` to omit running `bin/dev`).
 
-* Configuration
+To start the app later, simply run:
 
-* Database creation
+```bash
+bin/dev
+```
 
-* Database initialization
+Foreman will read `Procfile.dev` and run both the Rails server (`web`) and Tailwind watcher (`css`) so everyone has the same workflow.
 
-* How to run the test suite
+## Quality checks
 
-* Services (job queues, cache servers, search engines, etc.)
+Use the helper script to run test/lint suites:
 
-* Deployment instructions
+```bash
+bin/check
+```
 
-* ...
+This runs RSpec, Cucumber (if present), and `rubocop -a`, skipping any tool that isn't installed in the bundle.
