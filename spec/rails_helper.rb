@@ -2,7 +2,7 @@
 require 'simplecov'
 require 'simplecov-cobertura'
 
-SimpleCov.formatters = [SimpleCov::Formatter::HTMLFormatter, SimpleCov::Formatter::CoberturaFormatter]
+SimpleCov.formatters = [ SimpleCov::Formatter::HTMLFormatter, SimpleCov::Formatter::CoberturaFormatter ]
 SimpleCov.start 'rails' do
   add_filter '/spec/'
   add_filter '/config/'
