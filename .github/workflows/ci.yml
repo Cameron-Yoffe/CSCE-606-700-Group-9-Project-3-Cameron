@@ -19,8 +19,11 @@ jobs:
           ruby-version: .ruby-version
           bundler-cache: true
 
+      - name: Install Ruby gems
+        run: bundle install --jobs=4 --retry=3
+
       - name: Scan for common Rails security vulnerabilities using static analysis
-        run: bin/brakeman --no-pager
+        run: bundle exec brakeman --no-pager
 
   scan_js:
     runs-on: ubuntu-latest
@@ -36,7 +39,7 @@ jobs:
           bundler-cache: true
 
       - name: Scan for security vulnerabilities in JavaScript dependencies
-        run: bin/importmap audit
+        run: npm audit
 
   lint:
     runs-on: ubuntu-latest
@@ -50,8 +53,11 @@ jobs:
           ruby-version: .ruby-version
           bundler-cache: true
 
+      - name: Install Ruby gems
+        run: bundle install --jobs=4 --retry=3
+
       - name: Lint code for consistent style
-        run: bin/rubocop -f github
+        run: bundle exec rubocop -f github
 
   test:
     runs-on: ubuntu-latest
@@ -75,11 +81,76 @@ jobs:
           ruby-version: .ruby-version
           bundler-cache: true
 
-      - name: Run tests
+      - name: Setup test database
+        env:
+          RAILS_ENV: test
+        run: bundle exec rails db:test:prepare
+
+      - name: Run RSpec tests with coverage
         env:
           RAILS_ENV: test
           # REDIS_URL: redis://localhost:6379/0
-        run: bin/rails db:test:prepare test test:system
+        run: bundle exec rspec
+
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v5
+        if: always()
+        with:
+          name: coverage
+          path: coverage/
+          if-no-files-found: ignore
+
+      - name: Comment coverage on PR
+        uses: actions/github-script@v7
+        if: github.event_name == 'pull_request' && always()
+        with:
+          script: |
+            const fs = require('fs');
+            const coverage_file = 'coverage/.resultset.json';
+            if (!fs.existsSync(coverage_file)) {
+              core.info(`Coverage file not found: ${coverage_file}`);
+            } else {
+              try {
+                const coverage = JSON.parse(fs.readFileSync(coverage_file, 'utf8'));
+                let covValue = null;
+
+                // coverage.RSpec may be an object or an array depending on SimpleCov version/config
+                const rs = coverage.RSpec;
+                if (rs) {
+                  if (Array.isArray(rs)) {
+                    // handle formats like: [ [something, { coverage: {...} }] ]
+                    if (rs.length && Array.isArray(rs[0]) && rs[0].length > 1 && rs[0][1] && rs[0][1].coverage) {
+                      covValue = rs[0][1].coverage[''] ?? Object.values(rs[0][1].coverage)[0];
+                    }
+                  } else if (typeof rs === 'object') {
+                    // handle formats like: { "coverage": {...}, ... } or keyed by timestamp/command
+                    if (rs.coverage && typeof rs.coverage === 'object') {
+                      covValue = rs.coverage[''] ?? Object.values(rs.coverage)[0];
+                    } else {
+                      // maybe rs is keyed by timestamp: take first entry's coverage
+                      const firstKey = Object.keys(rs)[0];
+                      if (firstKey && rs[firstKey] && rs[firstKey].coverage) {
+                        covValue = rs[firstKey].coverage[''] ?? Object.values(rs[firstKey].coverage)[0];
+                      }
+                    }
+                  }
+                }
+
+                if (covValue == null || Number.isNaN(Number(covValue))) {
+                  core.info('Coverage data not found or in an unexpected format; skipping PR comment.');
+                } else {
+                  const percent = Math.round(Number(covValue) * 100 * 100) / 100;
+                  github.rest.issues.createComment({
+                    issue_number: context.issue.number,
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    body: `📊 Test Coverage: ${percent}%`
+                  });
+                }
+              } catch (err) {
+                core.info(`Failed to parse coverage file or compute coverage: ${err.message}`);
+              }
+            }
 
       - name: Keep screenshots from failed system tests
         uses: actions/upload-artifact@v5
