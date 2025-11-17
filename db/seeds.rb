@@ -3,7 +3,7 @@
 # The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
 
 # Clear existing data to ensure idempotency
-[Rating, DiaryEntry, Watchlist, Movie, User].each(&:delete_all)
+[ Rating, DiaryEntry, Watchlist, Movie, User ].each(&:delete_all)
 
 # For development seeding, use a simple password digest (in production, use proper authentication)
 # Note: These are for development only. In production, use proper password hashing.
@@ -51,9 +51,9 @@ movies = [
     vote_count: 25000,
     release_date: Date.parse('1994-10-14'),
     runtime: 142,
-    genres: ['Drama'],
+    genres: [ 'Drama' ],
     director: 'Frank Darabont',
-    cast: ['Tim Robbins', 'Morgan Freeman']
+    cast: [ 'Tim Robbins', 'Morgan Freeman' ]
   ),
   Movie.create!(
     title: 'The Dark Knight',
@@ -64,9 +64,9 @@ movies = [
     vote_count: 28000,
     release_date: Date.parse('2008-07-18'),
     runtime: 152,
-    genres: ['Action', 'Crime', 'Drama'],
+    genres: [ 'Action', 'Crime', 'Drama' ],
     director: 'Christopher Nolan',
-    cast: ['Christian Bale', 'Heath Ledger', 'Aaron Eckhart']
+    cast: [ 'Christian Bale', 'Heath Ledger', 'Aaron Eckhart' ]
   ),
   Movie.create!(
     title: 'Inception',
@@ -77,9 +77,9 @@ movies = [
     vote_count: 32000,
     release_date: Date.parse('2010-07-16'),
     runtime: 148,
-    genres: ['Action', 'Sci-Fi', 'Thriller'],
+    genres: [ 'Action', 'Sci-Fi', 'Thriller' ],
     director: 'Christopher Nolan',
-    cast: ['Leonardo DiCaprio', 'Marion Cotillard', 'Ellen Page']
+    cast: [ 'Leonardo DiCaprio', 'Marion Cotillard', 'Ellen Page' ]
   ),
   Movie.create!(
     title: 'Forrest Gump',
@@ -90,9 +90,9 @@ movies = [
     vote_count: 24000,
     release_date: Date.parse('1994-07-06'),
     runtime: 142,
-    genres: ['Drama', 'Romance'],
+    genres: [ 'Drama', 'Romance' ],
     director: 'Robert Zemeckis',
-    cast: ['Tom Hanks', 'Sally Field', 'Gary Sinise']
+    cast: [ 'Tom Hanks', 'Sally Field', 'Gary Sinise' ]
   ),
   Movie.create!(
     title: 'Pulp Fiction',
@@ -103,9 +103,9 @@ movies = [
     vote_count: 27000,
     release_date: Date.parse('1994-10-14'),
     runtime: 154,
-    genres: ['Crime', 'Drama'],
+    genres: [ 'Crime', 'Drama' ],
     director: 'Quentin Tarantino',
-    cast: ['John Travolta', 'Uma Thurman', 'Samuel L. Jackson']
+    cast: [ 'John Travolta', 'Uma Thurman', 'Samuel L. Jackson' ]
   )
 ]
 

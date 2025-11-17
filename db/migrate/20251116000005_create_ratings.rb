@@ -8,7 +8,7 @@ class CreateRatings < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :ratings, [:user_id, :movie_id], unique: true
+    add_index :ratings, [ :user_id, :movie_id ], unique: true
     add_index :ratings, :value
   end
 end

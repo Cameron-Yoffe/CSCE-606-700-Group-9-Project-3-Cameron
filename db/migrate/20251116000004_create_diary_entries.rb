@@ -10,8 +10,8 @@ class CreateDiaryEntries < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :diary_entries, [:user_id, :movie_id]
-    add_index :diary_entries, [:user_id, :watched_date]
+    add_index :diary_entries, [ :user_id, :movie_id ]
+    add_index :diary_entries, [ :user_id, :watched_date ]
     add_index :diary_entries, :watched_date
   end
 end
