@@ -10,5 +10,90 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 0) do
+ActiveRecord::Schema[8.1].define(version: 2025_11_16_000005) do
+  create_table "diary_entries", force: :cascade do |t|
+    t.text "content", null: false
+    t.datetime "created_at", null: false
+    t.string "mood"
+    t.integer "movie_id", null: false
+    t.integer "rating", default: 0
+    t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
+    t.date "watched_date"
+    t.index ["movie_id"], name: "index_diary_entries_on_movie_id"
+    t.index ["user_id", "movie_id"], name: "index_diary_entries_on_user_id_and_movie_id"
+    t.index ["user_id", "watched_date"], name: "index_diary_entries_on_user_id_and_watched_date"
+    t.index ["user_id"], name: "index_diary_entries_on_user_id"
+    t.index ["watched_date"], name: "index_diary_entries_on_watched_date"
+  end
+
+  create_table "movies", force: :cascade do |t|
+    t.string "backdrop_url"
+    t.text "cast", default: "[]"
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.string "director"
+    t.text "genres", default: "[]"
+    t.string "poster_url"
+    t.date "release_date"
+    t.integer "runtime"
+    t.string "title", null: false
+    t.integer "tmdb_id"
+    t.datetime "updated_at", null: false
+    t.float "vote_average"
+    t.integer "vote_count"
+    t.index ["release_date"], name: "index_movies_on_release_date"
+    t.index ["title"], name: "index_movies_on_title"
+    t.index ["tmdb_id"], name: "index_movies_on_tmdb_id", unique: true
+  end
+
+  create_table "ratings", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "movie_id", null: false
+    t.text "review"
+    t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
+    t.integer "value", null: false
+    t.index ["movie_id"], name: "index_ratings_on_movie_id"
+    t.index ["user_id", "movie_id"], name: "index_ratings_on_user_id_and_movie_id", unique: true
+    t.index ["user_id"], name: "index_ratings_on_user_id"
+    t.index ["value"], name: "index_ratings_on_value"
+  end
+
+  create_table "users", force: :cascade do |t|
+    t.text "bio"
+    t.datetime "created_at", null: false
+    t.string "email", null: false
+    t.string "first_name"
+    t.string "last_name"
+    t.string "password_digest", null: false
+    t.string "profile_image_url"
+    t.string "provider"
+    t.string "uid"
+    t.datetime "updated_at", null: false
+    t.string "username", null: false
+    t.index ["email"], name: "index_users_on_email", unique: true
+    t.index ["provider"], name: "index_users_on_provider"
+    t.index ["uid"], name: "index_users_on_uid"
+    t.index ["username"], name: "index_users_on_username", unique: true
+  end
+
+  create_table "watchlists", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "movie_id", null: false
+    t.string "status", default: "to_watch"
+    t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
+    t.index ["movie_id"], name: "index_watchlists_on_movie_id"
+    t.index ["status"], name: "index_watchlists_on_status"
+    t.index ["user_id", "movie_id"], name: "index_watchlists_on_user_id_and_movie_id", unique: true
+    t.index ["user_id"], name: "index_watchlists_on_user_id"
+  end
+
+  add_foreign_key "diary_entries", "movies"
+  add_foreign_key "diary_entries", "users"
+  add_foreign_key "ratings", "movies"
+  add_foreign_key "ratings", "users"
+  add_foreign_key "watchlists", "movies"
+  add_foreign_key "watchlists", "users"
 end
