@@ -1,6 +1,9 @@
 <div class="container mx-auto px-4 py-8">
-  <div class="flex justify-between items-center">
+  <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
     <h1 class="text-4xl font-bold">Welcome, <%= @user.first_name || @user.username %>!</h1>
-    <%= button_to "Sign Out", logout_path, method: :delete, class: "bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md" %>
+    <div class="flex gap-3">
+      <%= link_to "View Profile", profile_path, class: "bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-md shadow" %>
+      <%= button_to "Sign Out", logout_path, method: :delete, class: "bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md" %>
+    </div>
   </div>
 </div>
