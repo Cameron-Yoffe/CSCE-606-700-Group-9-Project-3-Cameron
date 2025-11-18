@@ -15,4 +15,19 @@ RSpec.describe MoviesHelper, type: :helper do
       expect(helper.poster_url("xyz.png", size: "original")).to eq("https://image.tmdb.org/t/p/original/xyz.png")
     end
   end
+
+  describe "#director_name" do
+    it "returns the director from credits" do
+      movie = { "credits" => { "crew" => [
+        { "job" => "Director", "name" => "David Fincher" },
+        { "job" => "Producer", "name" => "Art Linson" }
+      ] } }
+
+      expect(helper.director_name(movie)).to eq("David Fincher")
+    end
+
+    it "returns N/A when no director information is available" do
+      expect(helper.director_name({})).to eq("N/A")
+    end
+  end
 end

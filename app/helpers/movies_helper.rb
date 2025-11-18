@@ -17,4 +17,16 @@ module MoviesHelper
   rescue Date::Error
     "N/A"
   end
+
+  def director_name(movie_hash)
+    credits = movie_hash.fetch("credits", {})
+    crew = credits["crew"] || movie_hash["crew"]
+
+    director_entries = Array(crew).select { |member| member["job"] == "Director" }
+    if director_entries.any?
+      return director_entries.map { |member| member["name"] }.uniq.join(", ")
+    end
+
+    movie_hash["director"].presence || "N/A"
+  end
 end

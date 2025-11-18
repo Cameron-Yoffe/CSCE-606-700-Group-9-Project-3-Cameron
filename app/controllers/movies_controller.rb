@@ -18,7 +18,7 @@ class MoviesController < ApplicationController
   end
 
   def show
-    @movie = @tmdb_client.movie(params[:id])
+    @movie = @tmdb_client.movie(params[:id], append_to_response: "credits")
   rescue Tmdb::Error => e
     redirect_to movies_path, alert: e.message
   end
