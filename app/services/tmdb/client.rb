@@ -106,6 +106,12 @@ module Tmdb
       raise Error, "TMDB request timed out: #{error.message}"
     rescue SocketError => error
       raise Error, "TMDB connection failed: #{error.message}"
+    rescue OpenSSL::SSL::SSLError => error
+      message = "TMDB SSL connection failed: #{error.message}"
+      if ENV["TMDB_RELAX_SSL"] != "1"
+        message = "#{message}. Set TMDB_RELAX_SSL=1 to disable certificate verification in development if needed."
+      end
+      raise Error, message
     end
 
 
