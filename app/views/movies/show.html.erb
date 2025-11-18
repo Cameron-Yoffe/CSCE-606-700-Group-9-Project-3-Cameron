@@ -1,0 +1,61 @@
+<main class="min-h-screen bg-neutral-25 px-6 py-12">
+  <section class="mx-auto max-w-4xl space-y-8 rounded-3xl border border-neutral-100 bg-white/90 p-8 shadow-card backdrop-blur">
+    <header class="flex flex-col gap-6 md:flex-row md:items-center md:gap-8">
+      <%= image_tag poster_url(@movie["poster_path"], size: "w342"), alt: @movie["title"], class: "h-72 w-48 rounded-2xl object-cover shadow-md" %>
+      <div class="space-y-2">
+        <p class="badge bg-brand-50 text-brand-700 ring-brand-100">Movie Details</p>
+        <h1 class="font-display text-3xl font-semibold text-slate-900"><%= @movie["title"] %></h1>
+        <p class="text-slate-700">Released: <%= release_year(@movie) %></p>
+        <% if @movie["tagline"].present? %>
+          <p class="italic text-slate-600">“<%= @movie["tagline"] %>”</p>
+        <% end %>
+      </div>
+    </header>
+
+    <div class="space-y-4">
+      <h2 class="text-xl font-semibold text-slate-900">Overview</h2>
+      <p class="text-slate-700 leading-relaxed"><%= @movie["overview"].presence || "No overview available." %></p>
+    </div>
+
+    <div class="grid gap-4 md:grid-cols-2">
+      <div class="rounded-2xl border border-neutral-100 bg-white p-4 shadow-sm">
+        <h3 class="text-lg font-semibold text-slate-900">Quick facts</h3>
+        <dl class="mt-2 space-y-2 text-slate-700">
+          <div class="flex justify-between">
+            <dt>Director</dt>
+            <dd><%= director_name(@movie) %></dd>
+          </div>
+          <div class="flex justify-between">
+            <dt>Runtime</dt>
+            <dd><%= @movie["runtime"].present? ? "#{@movie["runtime"]} mins" : "N/A" %></dd>
+          </div>
+          <div class="flex justify-between">
+            <dt>User score</dt>
+            <dd><%= @movie["vote_average"].present? ? sprintf("%.1f/10", @movie["vote_average"]) : "N/A" %></dd>
+          </div>
+          <div class="flex justify-between">
+            <dt>TMDB ID</dt>
+            <dd><%= @movie["id"] %></dd>
+          </div>
+        </dl>
+      </div>
+      <div class="rounded-2xl border border-neutral-100 bg-white p-4 shadow-sm">
+        <h3 class="text-lg font-semibold text-slate-900">Genres</h3>
+        <% genres = @movie["genres"] || [] %>
+        <% if genres.any? %>
+          <div class="mt-2 flex flex-wrap gap-2">
+            <% genres.each do |genre| %>
+              <span class="badge bg-neutral-100 text-slate-800 ring-neutral-200"><%= genre["name"] %></span>
+            <% end %>
+          </div>
+        <% else %>
+          <p class="mt-2 text-slate-700">No genres available.</p>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="text-right">
+      <%= link_to "Back to search", movies_path(query: @movie["title"]), class: "text-brand-600 font-semibold hover:text-brand-700" %>
+    </div>
+  </section>
+</main>
