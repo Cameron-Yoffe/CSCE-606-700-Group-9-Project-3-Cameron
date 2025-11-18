@@ -90,6 +90,10 @@ module Tmdb
       http = Net::HTTP.new(uri.host, uri.port)
       http.use_ssl = uri.scheme == "https"
 
+      if http.use_ssl?
+        http.cert_store = build_cert_store
+      end
+
       #  relax SSL when enabled so we can record VCR cassettes
       if ENV["TMDB_RELAX_SSL"] == "1"
         http.verify_mode = OpenSSL::SSL::VERIFY_NONE
@@ -112,6 +116,23 @@ module Tmdb
         message = "#{message}. Set TMDB_RELAX_SSL=1 to disable certificate verification in development if needed."
       end
       raise Error, message
+    end
+
+
+    def build_cert_store
+      store = OpenSSL::X509::Store.new
+      store.set_default_paths
+
+      ca_file = ENV.fetch("TMDB_SSL_CA_FILE", ENV["SSL_CERT_FILE"])
+      if ca_file.present?
+        if File.file?(ca_file)
+          store.add_file(ca_file)
+        else
+          Rails.logger&.warn("TMDB_SSL_CA_FILE is set but could not be found: #{ca_file}")
+        end
+      end
+
+      store
     end
 
 
