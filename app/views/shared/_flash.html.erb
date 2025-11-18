@@ -1,0 +1,7 @@
+<div id="flash">
+  <% if local_assigns[:notice].present? || flash[:notice].present? %>
+    <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-800"> <%= local_assigns[:notice] || flash[:notice] %> </div>
+  <% elsif local_assigns[:alert].present? || flash[:alert].present? %>
+    <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-800"> <%= local_assigns[:alert] || flash[:alert] %> </div>
+  <% end %>
+</div>

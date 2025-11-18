@@ -1,0 +1,7 @@
+<%= turbo_stream.replace "watch-button-#{@watchlist.movie.tmdb_id}" do %>
+  <%= render partial: "watchlists/button", locals: { local_movie: @watchlist.movie, wl: @watchlist } %>
+<% end %>
+
+<%= turbo_stream.prepend "library-list" do %>
+  <%= render partial: "watchlists/library_item", locals: { wl: @watchlist } %>
+<% end %>
