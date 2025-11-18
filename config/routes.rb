@@ -6,7 +6,7 @@ Rails.application.routes.draw do
   get "up" => "rails/health#show", as: :rails_health_check
 
   resources :movies, only: %i[index show]
-  
+
   # Authentication routes
   get "sign_up", to: "registrations#new"
   post "sign_up", to: "registrations#create"
