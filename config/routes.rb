@@ -6,6 +6,19 @@ Rails.application.routes.draw do
   get "up" => "rails/health#show", as: :rails_health_check
 
   resources :movies, only: %i[index show]
+  
+  # Authentication routes
+  get "sign_up", to: "registrations#new"
+  post "sign_up", to: "registrations#create"
+  get "sign_in", to: "sessions#new"
+  post "sign_in", to: "sessions#create"
+  delete "logout", to: "sessions#destroy"
+  resources :users, only: [ :create ]
+  get "dashboard", to: "dashboards#show"
+
+  # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
+  # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
+  # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
   # Defines the root path route ("/")
   root "movies#index"

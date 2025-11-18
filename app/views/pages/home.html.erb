@@ -1,34 +1,14 @@
-<main class="flex min-h-screen items-center justify-center bg-neutral-25 px-6 py-16">
-  <section
-    class="max-w-4xl space-y-12 rounded-3xl border border-neutral-100 bg-white/90 p-10 text-center shadow-card backdrop-blur"
-    data-controller="animation"
-    data-animation-once-value="true"
-  >
+<div class="min-h-screen flex items-center justify-center bg-gray-100">
+  <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md text-center">
+    <h1 class="text-3xl font-bold mb-2">Movie Diary</h1>
+    <p class="text-gray-600 mb-8">Track and manage your movie watching</p>
     <div class="space-y-4">
-      <p class="badge mx-auto bg-brand-50 text-brand-700 ring-brand-100" data-animation-target="title">
-        Tailwind + GSAP Testing to see if it works
-      </p>
-      <h1 class="font-display text-3xl font-semibold text-slate-900" data-animation-target="title">
-        Smooth blur + pop animations
-      </h1>
-      <p class="text-slate-600">
-        These cards animate in using GSAP’s timeline utilities and custom helpers defined in
-        <code>app/javascript/lib/gsap_helpers.js</code>.
-      </p>
+      <a href="<%= sign_in_path %>" class="block bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md">
+        Sign In
+      </a>
+      <a href="<%= sign_up_path %>" class="block bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-md">
+        Create Account
+      </a>
     </div>
-
-    <div class="grid gap-6 md:grid-cols-3" data-animation-trigger>
-      <% [
-        { title: "Test 1", body: "GSAP ANIMATION 1" },
-        { title: "Test 2", body: "GSAP ANIMATION 2" },
-        { title: "Test 3", body: "GSAP ANIMATION 3" }
-      ].each do |card| %>
-        <article class="card space-y-3 text-left" data-animation-target="card">
-          <p class="text-sm font-semibold text-brand-600"><%= card[:title] %></p>
-          <p class="text-slate-600"><%= card[:body] %></p>
-        </article>
-      <% end %>
-    </div>
-
-  </section>
-</main>
+  </div>
+</div>
