@@ -1,0 +1,21 @@
+<%
+  tmdb = if defined?(movie_hash) && movie_hash.present?
+    movie_hash["id"]
+  else
+    local_movie&.tmdb_id
+  end
+
+  title = if defined?(movie_hash) && movie_hash.present?
+    movie_hash["title"]
+  else
+    local_movie&.title
+  end
+%>
+
+<%= turbo_frame_tag "watch-button-#{tmdb}" do %>
+  <% if wl.present? %>
+    <%= button_to "Remove", watchlist_path(wl), method: :delete, class: "rounded-full border border-neutral-200 bg-white px-3 py-1 text-sm text-slate-700 hover:bg-neutral-50" %>
+  <% else %>
+    <%= button_to "Add", watchlists_path, method: :post, params: { tmdb_id: tmdb, title: title }, class: "rounded-full bg-brand-600 px-3 py-1 text-sm font-semibold text-white hover:bg-brand-700" %>
+  <% end %>
+<% end %>

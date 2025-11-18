@@ -1,0 +1,15 @@
+<%= turbo_frame_tag "watchlist-item-#{wl.id}" do %>
+  <div class="rounded-2xl border border-neutral-100 bg-white p-4 shadow-sm">
+    <div class="flex items-start gap-3">
+      <% m = wl.movie %>
+      <%= image_tag m.poster_url.presence || "https://placehold.co/150x225?text=No+Image", alt: m.title, class: "h-24 w-16 rounded-md object-cover" %>
+      <div class="flex-1">
+        <h3 class="font-semibold"><%= m.title %></h3>
+        <p class="text-sm text-slate-600">Status: <%= wl.status.humanize %></p>
+      </div>
+      <div class="text-right">
+        <%= button_to "Remove", watchlist_path(wl), method: :delete, data: { turbo_frame: "watchlist-item-#{wl.id}" }, class: "inline-flex items-center rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-neutral-50" %>
+      </div>
+    </div>
+  </div>
+<% end %>
