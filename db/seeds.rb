@@ -4,7 +4,7 @@
 require "date"
 
 # Clear existing data to keep the seed idempotent
-[Rating, DiaryEntry, Watchlist, Movie, User].each(&:delete_all)
+[ Rating, DiaryEntry, Watchlist, Movie, User ].each(&:delete_all)
 
 movies_data = [
   {
@@ -18,7 +18,7 @@ movies_data = [
     runtime: 152,
     genres: %w[Action Crime Drama],
     director: "Christopher Nolan",
-    cast: ["Christian Bale", "Heath Ledger", "Aaron Eckhart"]
+    cast: [ "Christian Bale", "Heath Ledger", "Aaron Eckhart" ]
   },
   {
     title: "Inception",
@@ -31,7 +31,7 @@ movies_data = [
     runtime: 148,
     genres: %w[Action Science Fiction Thriller],
     director: "Christopher Nolan",
-    cast: ["Leonardo DiCaprio", "Marion Cotillard", "Elliot Page"]
+    cast: [ "Leonardo DiCaprio", "Marion Cotillard", "Elliot Page" ]
   },
   {
     title: "Interstellar",
@@ -44,7 +44,7 @@ movies_data = [
     runtime: 169,
     genres: %w[Adventure Drama Science Fiction],
     director: "Christopher Nolan",
-    cast: ["Matthew McConaughey", "Anne Hathaway", "Jessica Chastain"]
+    cast: [ "Matthew McConaughey", "Anne Hathaway", "Jessica Chastain" ]
   },
   {
     title: "Whiplash",
@@ -57,7 +57,7 @@ movies_data = [
     runtime: 107,
     genres: %w[Drama Music],
     director: "Damien Chazelle",
-    cast: ["Miles Teller", "J.K. Simmons", "Melissa Benoist"]
+    cast: [ "Miles Teller", "J.K. Simmons", "Melissa Benoist" ]
   },
   {
     title: "Parasite",
@@ -70,7 +70,7 @@ movies_data = [
     runtime: 133,
     genres: %w[Comedy Drama Thriller],
     director: "Bong Joon-ho",
-    cast: ["Song Kang-ho", "Lee Sun-kyun", "Cho Yeo-jeong"]
+    cast: [ "Song Kang-ho", "Lee Sun-kyun", "Cho Yeo-jeong" ]
   },
   {
     title: "Mad Max: Fury Road",
@@ -83,7 +83,7 @@ movies_data = [
     runtime: 120,
     genres: %w[Action Adventure Science Fiction],
     director: "George Miller",
-    cast: ["Tom Hardy", "Charlize Theron", "Nicholas Hoult"]
+    cast: [ "Tom Hardy", "Charlize Theron", "Nicholas Hoult" ]
   },
   {
     title: "La La Land",
@@ -96,7 +96,7 @@ movies_data = [
     runtime: 128,
     genres: %w[Comedy Drama Romance],
     director: "Damien Chazelle",
-    cast: ["Ryan Gosling", "Emma Stone", "John Legend"]
+    cast: [ "Ryan Gosling", "Emma Stone", "John Legend" ]
   },
   {
     title: "The Social Network",
@@ -109,7 +109,7 @@ movies_data = [
     runtime: 120,
     genres: %w[Drama],
     director: "David Fincher",
-    cast: ["Jesse Eisenberg", "Andrew Garfield", "Justin Timberlake"]
+    cast: [ "Jesse Eisenberg", "Andrew Garfield", "Justin Timberlake" ]
   },
   {
     title: "Spirited Away",
@@ -122,7 +122,7 @@ movies_data = [
     runtime: 125,
     genres: %w[Animation Family Fantasy],
     director: "Hayao Miyazaki",
-    cast: ["Rumi Hiiragi", "Miyu Irino", "Mari Natsuki"]
+    cast: [ "Rumi Hiiragi", "Miyu Irino", "Mari Natsuki" ]
   },
   {
     title: "The Godfather",
@@ -135,7 +135,7 @@ movies_data = [
     runtime: 175,
     genres: %w[Crime Drama],
     director: "Francis Ford Coppola",
-    cast: ["Marlon Brando", "Al Pacino", "James Caan"]
+    cast: [ "Marlon Brando", "Al Pacino", "James Caan" ]
   },
   {
     title: "Everything Everywhere All at Once",
@@ -148,7 +148,7 @@ movies_data = [
     runtime: 139,
     genres: %w[Action Adventure Science Fiction],
     director: "Daniel Kwan & Daniel Scheinert",
-    cast: ["Michelle Yeoh", "Ke Huy Quan", "Stephanie Hsu"]
+    cast: [ "Michelle Yeoh", "Ke Huy Quan", "Stephanie Hsu" ]
   },
   {
     title: "Dune",
@@ -161,7 +161,7 @@ movies_data = [
     runtime: 155,
     genres: %w[Science Fiction Adventure],
     director: "Denis Villeneuve",
-    cast: ["Timothée Chalamet", "Rebecca Ferguson", "Oscar Isaac"]
+    cast: [ "Timothée Chalamet", "Rebecca Ferguson", "Oscar Isaac" ]
   },
   {
     title: "Arrival",
@@ -174,7 +174,7 @@ movies_data = [
     runtime: 116,
     genres: %w[Drama Science Fiction Mystery],
     director: "Denis Villeneuve",
-    cast: ["Amy Adams", "Jeremy Renner", "Forest Whitaker"]
+    cast: [ "Amy Adams", "Jeremy Renner", "Forest Whitaker" ]
   },
   {
     title: "Blade Runner 2049",
@@ -187,7 +187,7 @@ movies_data = [
     runtime: 164,
     genres: %w[Science Fiction Drama],
     director: "Denis Villeneuve",
-    cast: ["Ryan Gosling", "Harrison Ford", "Ana de Armas"]
+    cast: [ "Ryan Gosling", "Harrison Ford", "Ana de Armas" ]
   },
   {
     title: "The Grand Budapest Hotel",
@@ -200,7 +200,7 @@ movies_data = [
     runtime: 99,
     genres: %w[Comedy Drama],
     director: "Wes Anderson",
-    cast: ["Ralph Fiennes", "Tony Revolori", "Saoirse Ronan"]
+    cast: [ "Ralph Fiennes", "Tony Revolori", "Saoirse Ronan" ]
   },
   {
     title: "Top Gun: Maverick",
@@ -213,7 +213,7 @@ movies_data = [
     runtime: 131,
     genres: %w[Action Drama],
     director: "Joseph Kosinski",
-    cast: ["Tom Cruise", "Miles Teller", "Jennifer Connelly"]
+    cast: [ "Tom Cruise", "Miles Teller", "Jennifer Connelly" ]
   }
 ]
 
@@ -253,7 +253,7 @@ def random_date_for_year(year, max_date)
   if year == max_date.year
     month = rand(1..max_date.month)
     last_day_of_month = Date.civil(year, month, -1).day
-    day_limit = month == max_date.month ? [max_date.day, last_day_of_month].min : last_day_of_month
+    day_limit = month == max_date.month ? [ max_date.day, last_day_of_month ].min : last_day_of_month
     Date.new(year, month, rand(1..day_limit))
   else
     month = rand(1..12)

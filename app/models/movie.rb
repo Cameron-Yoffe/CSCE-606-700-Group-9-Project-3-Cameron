@@ -17,15 +17,15 @@ class Movie < ApplicationRecord
     raw_genres = genres
 
     parsed = case raw_genres
-             when String
+    when String
                begin
                  JSON.parse(raw_genres)
                rescue JSON::ParserError
                  raw_genres.split(",").map(&:strip)
                end
-             else
+    else
                raw_genres
-             end
+    end
 
     Array(parsed).filter_map do |genre|
       if genre.is_a?(Hash)
