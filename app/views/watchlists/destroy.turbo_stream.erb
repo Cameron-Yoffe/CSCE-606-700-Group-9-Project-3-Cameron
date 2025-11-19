@@ -1,0 +1,5 @@
+<%= turbo_stream.replace "watch-button-#{movie.tmdb_id}" do %>
+  <%= render partial: "watchlists/button", locals: { local_movie: movie, wl: nil } %>
+<% end %>
+
+<%= turbo_stream.remove "watchlist-item-#{watchlist_id}" %>

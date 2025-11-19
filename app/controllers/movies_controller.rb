@@ -27,6 +27,11 @@ class MoviesController < ApplicationController
 
   def set_tmdb_client
     @tmdb_client = Tmdb::Client.new
+  rescue Tmdb::AuthenticationError => e
+    # If the TMDB API key is missing or invalid, don't raise an exception that breaks the app.
+    # Instead, surface a friendly alert and leave @tmdb_client nil so views can handle absence.
+    @tmdb_client = nil
+    flash.now[:alert] = e.message
   end
 
   def search_movies(query)
