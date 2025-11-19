@@ -40,7 +40,7 @@
                     </div>
                     <div class="text-right">
                       <div class="flex items-center justify-end gap-3">
-                        <%= link_to "View details", movie_path(movie["id"]), class: "text-brand-600 font-semibold hover:text-brand-700" %>
+                        <%= link_to "View details", movie_path(movie["id"]), class: "text-brand-600 font-semibold hover:text-brand-700", data: { turbo_frame: "_top" } %>
                         <% if logged_in? %>
                           <% local_movie = Movie.find_by(tmdb_id: movie["id"]) %>
                           <%= render partial: "watchlists/button", locals: { movie_hash: movie, local_movie: local_movie, wl: (local_movie && current_user.watchlists.find_by(movie: local_movie)) } %>
