@@ -4,6 +4,7 @@ class WatchlistsController < ApplicationController
   def create
     tmdb_id = params[:tmdb_id] || params.dig(:movie, :tmdb_id)
     title = params[:title] || params.dig(:movie, :title)
+    poster_url_param = params[:poster_url].presence
 
     if tmdb_id.blank?
       respond_to do |format|
@@ -15,6 +16,11 @@ class WatchlistsController < ApplicationController
 
     movie = Movie.find_or_create_by(tmdb_id: tmdb_id.to_i) do |m|
       m.title = title.presence || "Untitled"
+      m.poster_url = poster_url_param if poster_url_param.present?
+    end
+
+    if poster_url_param.present? && movie.poster_url.blank?
+      movie.update(poster_url: poster_url_param)
     end
 
     watchlist = current_user.watchlists.find_or_create_by(movie: movie)

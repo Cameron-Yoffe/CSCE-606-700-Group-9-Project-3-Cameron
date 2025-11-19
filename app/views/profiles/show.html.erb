@@ -1,0 +1,125 @@
+<main class="min-h-screen bg-neutral-25 px-6 py-12">
+  <div class="mx-auto max-w-5xl space-y-8">
+    <section class="card grid gap-6 md:grid-cols-[auto,1fr] md:items-center">
+      <div class="flex items-center gap-4">
+        <% if @user.profile_image_url.present? %>
+          <%= image_tag @user.profile_image_url, alt: "#{@user.username} avatar", class: "h-24 w-24 rounded-full object-cover ring-4 ring-brand-100 shadow-md" %>
+        <% else %>
+          <div class="flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-brand-500 to-brand-700 text-3xl font-semibold text-white shadow-md">
+            <%= @user.username.first.upcase %>
+          </div>
+        <% end %>
+        <div>
+          <p class="text-sm font-semibold uppercase tracking-wide text-brand-700">Profile</p>
+          <h1 class="font-display text-3xl font-semibold text-slate-900"><%= @user.username %></h1>
+          <p class="text-slate-700 max-w-xl"><%= @user.bio.presence || "Add a short bio to tell others about your movie tastes." %></p>
+        </div>
+      </div>
+      <div class="flex flex-wrap items-center justify-end gap-3 text-sm text-slate-600">
+        <div class="rounded-full bg-neutral-50 px-3 py-1 ring-1 ring-neutral-100">Member since <%= @user.created_at.to_fs(:long) %></div>
+        <%= link_to "Go to dashboard", dashboard_path, class: "btn btn-secondary" %>
+        <%= button_tag "Edit Profile", type: "button", class: "btn btn-primary" %>
+      </div>
+    </section>
+
+    <section class="grid gap-4 md:grid-cols-3">
+      <div class="card space-y-2">
+        <p class="text-sm font-medium text-slate-600">Diary entries</p>
+        <p class="text-4xl font-display font-semibold text-slate-900"><%= @diary_count %></p>
+        <p class="text-slate-600">Total movies you have logged so far.</p>
+      </div>
+      <div class="card space-y-2">
+        <p class="text-sm font-medium text-slate-600">This year</p>
+        <p class="text-4xl font-display font-semibold text-slate-900"><%= @yearly_movies_logged %></p>
+        <p class="text-slate-600">Movies added to your diary in <%= Date.current.year %>.</p>
+      </div>
+      <div class="card space-y-2">
+        <p class="text-sm font-medium text-slate-600">Average rating</p>
+        <p class="text-4xl font-display font-semibold text-slate-900"><%= @average_rating.present? ? sprintf("%.1f", @average_rating) : "-" %></p>
+        <p class="text-slate-600">Across your ratings and diary entries.</p>
+      </div>
+    </section>
+
+    <section class="grid gap-6 md:grid-cols-2">
+      <div class="card space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xl font-semibold text-slate-900">Favorite genres</h2>
+          <span class="badge">Auto-calculated</span>
+        </div>
+        <% if @favorite_genres.any? %>
+          <div class="space-y-4">
+            <% @favorite_genres.each do |genre, count| %>
+              <div class="space-y-2 rounded-xl bg-neutral-50 px-4 py-3 ring-1 ring-neutral-100">
+                <div class="flex items-center justify-between text-sm">
+                  <span class="font-semibold text-slate-900"><%= genre %></span>
+                  <span class="text-slate-600"><%= pluralize(count, "log") %></span>
+                </div>
+                <div class="h-2 w-full overflow-hidden rounded-full bg-neutral-100">
+                  <div
+                    class="h-full rounded-full bg-brand-500"
+                    style="width: <%= @max_genre_count.positive? ? ((count.to_f / @max_genre_count) * 100).round(1) : 0 %>%"></div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% else %>
+          <p class="text-slate-600">Log a few movies to see your top genres.</p>
+        <% end %>
+      </div>
+      <div class="card space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xl font-semibold text-slate-900">Favorite directors</h2>
+          <span class="badge">Auto-calculated</span>
+        </div>
+        <% if @favorite_directors.any? %>
+          <div class="space-y-4">
+            <% @favorite_directors.each do |director, count| %>
+              <div class="space-y-2 rounded-xl bg-neutral-50 px-4 py-3 ring-1 ring-neutral-100">
+                <div class="flex items-center justify-between text-sm">
+                  <span class="font-semibold text-slate-900"><%= director %></span>
+                  <span class="text-slate-600"><%= pluralize(count, "log") %></span>
+                </div>
+                <div class="h-2 w-full overflow-hidden rounded-full bg-neutral-100">
+                  <div
+                    class="h-full rounded-full bg-brand-600"
+                    style="width: <%= @max_director_count.positive? ? ((count.to_f / @max_director_count) * 100).round(1) : 0 %>%"></div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% else %>
+          <p class="text-slate-600">Your most-watched directors will appear here.</p>
+        <% end %>
+      </div>
+    </section>
+
+    <section class="grid gap-6 md:grid-cols-2">
+      <div class="card space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xl font-semibold text-slate-900">Movies logged this year</h2>
+          <span class="text-sm text-slate-600">Monthly totals</span>
+        </div>
+        <canvas
+          data-controller="chart"
+          data-chart-type-value="bar"
+          data-chart-title-value="Movies logged this year"
+          data-chart-data-value="<%= @monthly_chart_data.to_json %>"
+          height="200"
+        ></canvas>
+      </div>
+      <div class="card space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xl font-semibold text-slate-900">Genre breakdown</h2>
+          <span class="text-sm text-slate-600">Based on diary entries</span>
+        </div>
+        <canvas
+          data-controller="chart"
+          data-chart-type-value="pie"
+          data-chart-title-value="Favorite genres"
+          data-chart-data-value="<%= @genre_chart_data.to_json %>"
+          height="200"
+        ></canvas>
+      </div>
+    </section>
+  </div>
+</main>
