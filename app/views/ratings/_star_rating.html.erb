@@ -1,0 +1,157 @@
+<div class="star-rating">
+  <% rating = user_rating_for(movie) %>
+  <% current_value = rating&.value || 0 %>
+  
+  <!-- Compact Star Display (for dashboard) -->
+  <% if !show_form %>
+    <div class="flex items-center gap-1">
+      <div class="flex gap-0.5">
+        <% (1..5).each do |star| %>
+          <% is_filled = star <= current_value %>
+          <svg class="h-4 w-4 <%= is_filled ? 'fill-yellow-400 text-yellow-400' : 'fill-gray-300 text-gray-300' %>" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+            <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+          </svg>
+        <% end %>
+      </div>
+      <span class="text-xs text-slate-600 font-medium">
+        <% if current_value > 0 %>
+          <%= current_value %>/5
+        <% else %>
+          Not rated
+        <% end %>
+      </span>
+    </div>
+
+  <!-- Full Star Display (for movie page form) -->
+  <% else %>
+    <div class="space-y-3">
+      <!-- Rating Form (on movie show page) -->
+      <% if logged_in? %>
+        <div class="rounded-lg border border-gray-200 bg-gray-50 p-4">
+          <label class="block text-sm font-medium text-slate-700 mb-3">Rate this movie</label>
+          
+          <% if rating %>
+            <%= form_with(model: rating, local: true, method: :patch) do |f| %>
+              <div class="flex gap-2 mb-3">
+                <% (1..5).each do |star| %>
+                  <button 
+                    type="button" 
+                    class="star-btn p-0 transition-transform hover:scale-110 focus:outline-none"
+                    data-value="<%= star %>"
+                  >
+                    <svg class="h-8 w-8 <%= star <= current_value ? 'fill-yellow-400 text-yellow-400' : 'fill-gray-300 text-gray-300 hover:fill-yellow-300' %>" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                      <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+                    </svg>
+                  </button>
+                <% end %>
+              </div>
+              <%= f.hidden_field :value, value: current_value, class: "rating-value-input" %>
+              <%= f.hidden_field :movie_id, value: movie.id %>
+              <%= f.submit "Update Rating", class: "hidden" %>
+            <% end %>
+          <% else %>
+            <%= form_with(model: Rating.new, local: true, method: :post) do |f| %>
+              <div class="flex gap-2 mb-3">
+                <% (1..5).each do |star| %>
+                  <button 
+                    type="button" 
+                    class="star-btn p-0 transition-transform hover:scale-110 focus:outline-none"
+                    data-value="<%= star %>"
+                  >
+                    <svg class="h-8 w-8 fill-gray-300 text-gray-300 hover:fill-yellow-300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                      <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+                    </svg>
+                  </button>
+                <% end %>
+              </div>
+              <%= f.hidden_field :value, value: 0, class: "rating-value-input" %>
+              <%= f.hidden_field :movie_id, value: movie.id %>
+              <%= f.submit "Save Rating", class: "hidden" %>
+            <% end %>
+          <% end %>
+        </div>
+      <% else %>
+        <p class="text-sm text-slate-600"><%= link_to "Sign in", sign_in_path, class: "text-blue-600 hover:underline" %> to rate this movie.</p>
+      <% end %>
+    </div>
+
+    <script>
+      // Use event delegation at document level to handle star clicks
+      document.addEventListener('click', function(e) {
+        const starBtn = e.target.closest('.star-btn');
+        if (!starBtn) return;
+        
+        e.preventDefault();
+        
+        const form = starBtn.closest('form');
+        if (!form) return;
+        
+        const value = starBtn.getAttribute('data-value');
+        const ratingInput = form.querySelector('.rating-value-input');
+        
+        if (!ratingInput) return;
+        
+        ratingInput.value = value;
+        
+        // Update visual state
+        const starBtns = form.querySelectorAll('.star-btn');
+        starBtns.forEach((b, idx) => {
+          const svg = b.querySelector('svg');
+          if (idx < value) {
+            svg.classList.remove('fill-gray-300', 'text-gray-300', 'hover:fill-yellow-300');
+            svg.classList.add('fill-yellow-400', 'text-yellow-400');
+          } else {
+            svg.classList.remove('fill-yellow-400', 'text-yellow-400');
+            svg.classList.add('fill-gray-300', 'text-gray-300', 'hover:fill-yellow-300');
+          }
+        });
+        
+        // Auto-submit the form
+        setTimeout(() => {
+          form.submit();
+        }, 100);
+      });
+      
+      // Use event delegation for hover effects
+      document.addEventListener('mouseenter', function(e) {
+        const starBtn = e.target.closest('.star-btn');
+        if (!starBtn) return;
+        
+        const form = starBtn.closest('form');
+        if (!form) return;
+        
+        const value = starBtn.getAttribute('data-value');
+        const starBtns = form.querySelectorAll('.star-btn');
+        
+        starBtns.forEach((b, idx) => {
+          const svg = b.querySelector('svg');
+          if (idx < value) {
+            svg.classList.add('fill-yellow-300');
+          } else {
+            svg.classList.remove('fill-yellow-300');
+          }
+        });
+      }, true);
+      
+      // Reset hover effect when leaving form
+      document.addEventListener('mouseleave', function(e) {
+        const form = e.target.closest('form');
+        if (!form) return;
+        
+        const ratingInput = form.querySelector('.rating-value-input');
+        if (!ratingInput) return;
+        
+        const currentValue = ratingInput.value;
+        const starBtns = form.querySelectorAll('.star-btn');
+        
+        starBtns.forEach((b, idx) => {
+          const svg = b.querySelector('svg');
+          if (idx < currentValue) {
+            svg.classList.add('fill-yellow-400');
+            svg.classList.remove('fill-yellow-300');
+          }
+        });
+      }, true);
+    </script>
+  <% end %>
+</div>

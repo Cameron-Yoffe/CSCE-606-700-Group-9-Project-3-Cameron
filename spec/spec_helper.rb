@@ -13,6 +13,22 @@
 # it.
 #
 # See https://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
+
+# Configure SimpleCov for code coverage
+require 'simplecov'
+require 'simplecov-cobertura'
+
+SimpleCov.formatters = [
+  SimpleCov::Formatter::HTMLFormatter,
+  SimpleCov::Formatter::CoberturaFormatter
+]
+
+SimpleCov.start('rails') do
+  add_filter '/spec/'
+  add_filter '/vendor/'
+  add_filter '/config/'
+end
+
 RSpec.configure do |config|
   # rspec-expectations config goes here. You can use an alternate
   # assertion/expectation library such as wrong or the stdlib/minitest

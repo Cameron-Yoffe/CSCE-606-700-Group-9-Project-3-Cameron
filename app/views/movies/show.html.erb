@@ -40,16 +40,26 @@
         </dl>
       </div>
       <div class="rounded-2xl border border-neutral-100 bg-white p-4 shadow-sm">
-        <h3 class="text-lg font-semibold text-slate-900">Genres</h3>
-        <% genres = @movie["genres"] || [] %>
-        <% if genres.any? %>
-          <div class="mt-2 flex flex-wrap gap-2">
-            <% genres.each do |genre| %>
-              <span class="badge bg-neutral-100 text-slate-800 ring-neutral-200"><%= genre["name"] %></span>
-            <% end %>
+        <h3 class="text-lg font-semibold text-slate-900">Your Rating</h3>
+        <% if logged_in? %>
+          <% movie_record = Movie.find_by(tmdb_id: @movie["id"]) || Movie.create!(
+            title: @movie["title"],
+            tmdb_id: @movie["id"],
+            poster_url: @movie["poster_path"],
+            description: @movie["overview"],
+            vote_average: @movie["vote_average"],
+            vote_count: @movie["vote_count"],
+            release_date: @movie["release_date"].present? ? Date.parse(@movie["release_date"]) : nil,
+            runtime: @movie["runtime"],
+            genres: @movie["genres"]&.map { |g| g["name"] }&.to_json,
+            director: director_name(@movie),
+            cast: @movie["cast"]&.to_json
+          ) %>
+          <div class="mt-2">
+            <%= render "ratings/star_rating", movie: movie_record, show_form: true %>
           </div>
         <% else %>
-          <p class="mt-2 text-slate-700">No genres available.</p>
+          <p class="mt-2 text-sm text-slate-600"><%= link_to "Sign in", sign_in_path, class: "text-blue-600 hover:underline" %> to rate this movie.</p>
         <% end %>
       </div>
     </div>
