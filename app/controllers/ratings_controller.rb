@@ -10,7 +10,7 @@ class RatingsController < ApplicationController
     if @rating.save
       # Automatically add to watchlist as "watched" if not already in library
       add_to_library(@movie)
-      
+
       respond_to do |format|
         format.json { render json: { success: true, rating: @rating }, status: :created }
         format.html { redirect_to movie_path(@movie.tmdb_id), notice: "Rating saved successfully." }
@@ -27,7 +27,7 @@ class RatingsController < ApplicationController
     if @rating.update(rating_params)
       # Automatically add to watchlist as "watched" if not already in library
       add_to_library(@movie)
-      
+
       respond_to do |format|
         format.json { render json: { success: true, rating: @rating } }
         format.html { redirect_to movie_path(@movie.tmdb_id), notice: "Rating updated successfully." }
