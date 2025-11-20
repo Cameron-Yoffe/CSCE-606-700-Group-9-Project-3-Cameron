@@ -15,4 +15,9 @@ module ApplicationHelper
     session.delete(:user_id)
     @current_user = nil
   end
+
+  def user_rating_for(movie)
+    return nil unless logged_in?
+    current_user.ratings.find_by(movie_id: movie.id)
+  end
 end
