@@ -1,0 +1,73 @@
+<main class="min-h-screen bg-neutral-25 px-6 py-12">
+  <section class="mx-auto max-w-2xl">
+    <header class="mb-8">
+      <%= link_to "← Back to Diary", diary_entries_path, class: "text-brand-600 font-semibold hover:text-brand-700" %>
+      <h1 class="font-display text-4xl font-semibold text-slate-900 mt-4">Edit Favorite Entry</h1>
+    </header>
+
+    <div class="rounded-3xl border border-neutral-100 bg-white p-8 shadow-card">
+      <% if @movie %>
+        <div class="mb-8 p-4 bg-brand-50 rounded-2xl border border-brand-100">
+          <div class="flex gap-4">
+            <% if @movie.poster_url.present? %>
+              <img src="<%= @movie.poster_url %>" alt="<%= @movie.title %>" class="w-20 h-28 rounded object-cover">
+            <% end %>
+            <div>
+              <p class="text-sm text-brand-700 font-semibold">Movie</p>
+              <p class="text-lg font-semibold text-slate-900"><%= @movie.title %></p>
+              <p class="text-sm text-slate-600"><%= @movie.release_date.year if @movie.release_date.present? %></p>
+            </div>
+          </div>
+        </div>
+      <% end %>
+
+      <%= form_with model: @diary_entry, local: true do |form| %>
+        <% if @diary_entry.errors.any? %>
+          <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl">
+            <h2 class="text-red-800 font-semibold"><%= pluralize(@diary_entry.errors.count, "error") %> prevented this entry from being saved:</h2>
+            <ul class="mt-2 list-inside list-disc text-red-700">
+              <% @diary_entry.errors.full_messages.each do |message| %>
+                <li><%= message %></li>
+              <% end %>
+            </ul>
+          </div>
+        <% end %>
+
+        <%= form.hidden_field :movie_id, value: @movie&.id %>
+
+        <div class="space-y-6">
+          <div>
+            <label class="block text-sm font-semibold text-slate-900 mb-2">Viewing Date</label>
+            <%= form.date_field :watched_date, class: "w-full px-4 py-2 rounded-lg border border-neutral-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 outline-none transition" %>
+            <p class="text-xs text-slate-500 mt-1">When did you watch this movie?</p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-slate-900 mb-2">Notes</label>
+            <%= form.text_area :content, placeholder: "Share your thoughts about this movie...", rows: 5, class: "w-full px-4 py-2 rounded-lg border border-neutral-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 outline-none transition" %>
+            <p class="text-xs text-slate-500 mt-1">Optional: Add your personal notes and review</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-sm font-semibold text-slate-900 mb-2">Tags</label>
+              <%= form.text_field :mood, placeholder: "e.g., inspiring, relaxing, funny", class: "w-full px-4 py-2 rounded-lg border border-neutral-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 outline-none transition" %>
+              <p class="text-xs text-slate-500 mt-1">Optional: Add tags to describe your mood or the movie's vibe</p>
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold text-slate-900 mb-2">Rating</label>
+              <%= form.number_field :rating, min: 0, max: 10, placeholder: "0-10", class: "w-full px-4 py-2 rounded-lg border border-neutral-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 outline-none transition" %>
+              <p class="text-xs text-slate-500 mt-1">Optional: Rate this movie out of 10</p>
+            </div>
+          </div>
+
+          <div class="flex gap-4 pt-6">
+            <%= form.submit "Update Favorite", class: "flex-1 px-6 py-3 bg-brand-600 text-white font-semibold rounded-lg hover:bg-brand-700 transition" %>
+            <%= link_to "Cancel", diary_entries_path, class: "flex-1 text-center px-6 py-3 bg-neutral-100 text-slate-900 font-semibold rounded-lg hover:bg-neutral-200 transition" %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </section>
+</main>

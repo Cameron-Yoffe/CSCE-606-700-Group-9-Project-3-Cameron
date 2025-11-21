@@ -7,6 +7,7 @@ Rails.application.routes.draw do
 
   resources :movies, only: %i[index show]
   resources :watchlists, only: %i[create destroy]
+  resources :diary_entries, only: %i[index show new create edit update destroy]
 
   # Authentication routes
   get "sign_up", to: "registrations#new"
