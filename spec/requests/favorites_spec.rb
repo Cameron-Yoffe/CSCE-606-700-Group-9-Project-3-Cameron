@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe "Favorites", type: :request do
-  let(:password) { "Pass123" }
+  let(:password) { "SecurePass123" }
   let(:user) { create(:user, password: password, password_confirmation: password) }
   let(:movie) { create(:movie) }
 
