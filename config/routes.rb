@@ -8,6 +8,7 @@ Rails.application.routes.draw do
   resources :movies, only: %i[index show]
   resources :watchlists, only: %i[create destroy]
   resources :ratings, only: %i[create update]
+  resources :diary_entries
 
   # Authentication routes
   get "sign_up", to: "registrations#new"
