@@ -6,6 +6,7 @@ Rails.application.routes.draw do
   get "up" => "rails/health#show", as: :rails_health_check
 
   resources :movies, only: %i[index show]
+  resources :favorites, only: %i[index create destroy]
   resources :watchlists, only: %i[create destroy]
   resources :ratings, only: %i[create update]
   resources :diary_entries

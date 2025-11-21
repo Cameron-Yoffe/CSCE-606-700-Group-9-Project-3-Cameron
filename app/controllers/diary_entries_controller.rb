@@ -27,7 +27,7 @@ class DiaryEntriesController < ApplicationController
     @diary_entry.movie = movie
 
     if @diary_entry.save
-      redirect_to diary_entries_path, notice: "Favorite entry created successfully"
+      redirect_to diary_entries_path, notice: "Diary entry created successfully"
     else
       @movie = movie
       render :new, status: :unprocessable_entity
@@ -40,7 +40,7 @@ class DiaryEntriesController < ApplicationController
 
   def update
     if @diary_entry.update(diary_entry_params)
-      redirect_to diary_entries_path, notice: "Favorite entry updated successfully"
+      redirect_to diary_entries_path, notice: "Diary entry updated successfully"
     else
       @movie = @diary_entry.movie
       render :edit, status: :unprocessable_entity
@@ -49,7 +49,7 @@ class DiaryEntriesController < ApplicationController
 
   def destroy
     @diary_entry.destroy
-    redirect_to diary_entries_path, notice: "Favorite entry deleted successfully"
+    redirect_to diary_entries_path, notice: "Diary entry deleted successfully"
   end
 
   private
@@ -57,7 +57,7 @@ class DiaryEntriesController < ApplicationController
   def set_diary_entry
     @diary_entry = current_user.diary_entries.find(params[:id])
   rescue ActiveRecord::RecordNotFound
-    redirect_to diary_entries_path, alert: "Favorite entry not found"
+    redirect_to diary_entries_path, alert: "Diary entry not found"
   end
 
   def diary_entry_params

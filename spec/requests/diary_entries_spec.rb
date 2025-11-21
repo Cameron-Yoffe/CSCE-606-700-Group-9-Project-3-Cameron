@@ -47,7 +47,7 @@ RSpec.describe "DiaryEntries", type: :request do
         sign_in(user)
         get diary_entries_path
         expect(response).to be_successful
-        expect(response.body).to include("No favorite movies yet")
+        expect(response.body).to include("No diary entries yet")
       end
     end
   end
@@ -65,7 +65,7 @@ RSpec.describe "DiaryEntries", type: :request do
         sign_in(user)
         get new_diary_entry_path
         expect(response).to be_successful
-        expect(response.body).to include("Add to Favorites")
+        expect(response.body).to include("Log Movie")
       end
 
       it "pre-fills watched_date with today" do
@@ -134,7 +134,7 @@ RSpec.describe "DiaryEntries", type: :request do
           }
         }
         expect(response).to have_http_status(:unprocessable_entity)
-        expect(response.body).to include("Add to Favorites")
+        expect(response.body).to include("Log Movie")
       end
 
       it "shows error when movie is not found" do
@@ -238,7 +238,7 @@ RSpec.describe "DiaryEntries", type: :request do
       it "displays the edit form" do
         get edit_diary_entry_path(entry)
         expect(response).to be_successful
-        expect(response.body).to include("Edit Favorite Entry")
+        expect(response.body).to include("Edit Diary Entry")
         expect(response.body).to include(entry.content)
       end
     end
@@ -277,7 +277,7 @@ RSpec.describe "DiaryEntries", type: :request do
           diary_entry: { content: "" }
         }
         expect(response).to have_http_status(:unprocessable_entity)
-        expect(response.body).to include("Edit Favorite Entry")
+        expect(response.body).to include("Edit Diary Entry")
       end
     end
   end

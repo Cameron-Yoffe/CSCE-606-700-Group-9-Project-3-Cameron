@@ -4,9 +4,11 @@ class User < ApplicationRecord
 
   # Associations
   has_many :diary_entries, dependent: :destroy
+  has_many :favorites, dependent: :destroy
   has_many :ratings, dependent: :destroy
   has_many :watchlists, dependent: :destroy
   has_many :movies, through: :watchlists
+  has_many :favorite_movies, through: :favorites, source: :movie
 
   # Validations
   validates :email, presence: true, uniqueness: true, format: { with: URI::MailTo::EMAIL_REGEXP, message: "must be a valid email address" }

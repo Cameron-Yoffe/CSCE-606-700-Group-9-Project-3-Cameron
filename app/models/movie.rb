@@ -3,6 +3,7 @@ require "json"
 class Movie < ApplicationRecord
   # Associations
   has_many :diary_entries, dependent: :destroy
+  has_many :favorites, dependent: :destroy
   has_many :ratings, dependent: :destroy
   has_many :watchlists, dependent: :destroy
   has_many :users, through: :watchlists

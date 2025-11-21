@@ -2,8 +2,8 @@
   <section class="mx-auto max-w-2xl">
     <header class="mb-8">
       <%= link_to "← Back to Diary", diary_entries_path, class: "text-brand-600 font-semibold hover:text-brand-700" %>
-      <h1 class="font-display text-4xl font-semibold text-slate-900 mt-4">Add to Favorites</h1>
-      <p class="mt-2 text-slate-600">Record your favorite movie and your thoughts about it</p>
+      <h1 class="font-display text-4xl font-semibold text-slate-900 mt-4">Log Movie</h1>
+      <p class="mt-2 text-slate-600">Record the movie you watched and your thoughts about it</p>
     </header>
 
     <div class="rounded-3xl border border-neutral-100 bg-white p-8 shadow-card">
@@ -64,7 +64,7 @@
           </div>
 
           <div class="flex gap-4 pt-6">
-            <%= form.submit "Save Favorite", class: "flex-1 px-6 py-3 bg-brand-600 text-white font-semibold rounded-lg hover:bg-brand-700 transition" %>
+            <%= form.submit "Save Diary Entry", class: "flex-1 px-6 py-3 bg-brand-600 text-white font-semibold rounded-lg hover:bg-brand-700 transition" %>
             <%= link_to "Cancel", diary_entries_path, class: "flex-1 text-center px-6 py-3 bg-neutral-100 text-slate-900 font-semibold rounded-lg hover:bg-neutral-200 transition" %>
           </div>
         </div>
