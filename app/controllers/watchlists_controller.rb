@@ -57,6 +57,10 @@ class WatchlistsController < ApplicationController
 
     movie = watchlist.movie
     wl_id = watchlist.id
+
+    # Also remove the associated rating when removing from library
+    current_user.ratings.find_by(movie_id: movie.id)&.destroy
+
     watchlist.destroy
 
     respond_to do |format|
