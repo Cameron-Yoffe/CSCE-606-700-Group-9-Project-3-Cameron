@@ -5,6 +5,7 @@
       <div class="hidden md:flex items-center space-x-4 text-sm font-medium text-gray-700">
         <%= link_to "Movies", movies_path, class: "hover:text-indigo-600" %>
         <% if logged_in? %>
+          <%= link_to "Diary", diary_entries_path, class: "hover:text-indigo-600" %>
           <%= link_to "Profile", profile_path, class: "hover:text-indigo-600" %>
         <% end %>
       </div>

@@ -1,0 +1,45 @@
+<main class="min-h-screen bg-neutral-25 px-6 py-12">
+  <section class="mx-auto max-w-2xl">
+    <header class="mb-8">
+      <%= link_to "← Back to Diary", diary_entries_path, class: "text-brand-600 font-semibold hover:text-brand-700" %>
+    </header>
+
+    <div class="rounded-3xl border border-neutral-100 bg-white overflow-hidden shadow-card">
+      <% if @diary_entry.movie.poster_url.present? %>
+        <img src="<%= @diary_entry.movie.poster_url %>" alt="<%= @diary_entry.movie.title %>" class="w-full h-96 object-cover">
+      <% end %>
+      
+      <div class="p-8">
+        <h1 class="font-display text-3xl font-semibold text-slate-900"><%= @diary_entry.movie.title %></h1>
+        <p class="text-slate-600 mt-2">Viewed on <%= @diary_entry.watched_date.strftime("%B %d, %Y") %></p>
+
+        <% if @diary_entry.rating.present? && @diary_entry.rating > 0 %>
+          <div class="mt-4">
+            <p class="text-sm font-semibold text-slate-900">Rating: <span class="text-lg text-brand-600"><%= @diary_entry.rating %>/10</span></p>
+          </div>
+        <% end %>
+
+        <% if @diary_entry.mood.present? %>
+          <div class="mt-4">
+            <p class="text-sm font-semibold text-slate-900 mb-2">Tags:</p>
+            <p class="text-slate-700"><%= @diary_entry.mood %></p>
+          </div>
+        <% end %>
+
+        <% if @diary_entry.content.present? %>
+          <div class="mt-6">
+            <h2 class="text-lg font-semibold text-slate-900 mb-3">Notes</h2>
+            <div class="prose prose-slate max-w-none text-slate-700 whitespace-pre-wrap">
+              <%= @diary_entry.content %>
+            </div>
+          </div>
+        <% end %>
+
+        <div class="flex gap-4 mt-8 pt-8 border-t border-neutral-100">
+          <%= link_to "Edit", edit_diary_entry_path(@diary_entry), class: "flex-1 text-center px-6 py-2 bg-neutral-50 text-slate-700 font-semibold rounded-lg hover:bg-neutral-100 transition" %>
+          <%= link_to "Delete", diary_entry_path(@diary_entry), method: :delete, data: { confirm: "Are you sure?" }, class: "flex-1 text-center px-6 py-2 bg-red-50 text-red-700 font-semibold rounded-lg hover:bg-red-100 transition" %>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
