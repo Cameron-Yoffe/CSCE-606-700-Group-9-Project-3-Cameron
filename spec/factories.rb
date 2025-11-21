@@ -40,6 +40,11 @@ FactoryBot.define do
     review { Faker::Lorem.paragraph }
   end
 
+  factory :favorite do
+    user { association :user }
+    movie { association :movie }
+  end
+
   factory :diary_entry do
     user { association :user }
     movie { association :movie }

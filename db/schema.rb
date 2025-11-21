@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_11_16_000005) do
+ActiveRecord::Schema[8.1].define(version: 2025_11_21_051358) do
   create_table "diary_entries", force: :cascade do |t|
     t.text "content", null: false
     t.datetime "created_at", null: false
@@ -25,6 +25,16 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_16_000005) do
     t.index ["user_id", "watched_date"], name: "index_diary_entries_on_user_id_and_watched_date"
     t.index ["user_id"], name: "index_diary_entries_on_user_id"
     t.index ["watched_date"], name: "index_diary_entries_on_watched_date"
+  end
+
+  create_table "favorites", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "movie_id", null: false
+    t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
+    t.index ["movie_id"], name: "index_favorites_on_movie_id"
+    t.index ["user_id", "movie_id"], name: "index_favorites_on_user_id_and_movie_id", unique: true
+    t.index ["user_id"], name: "index_favorites_on_user_id"
   end
 
   create_table "movies", force: :cascade do |t|
@@ -92,6 +102,8 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_16_000005) do
 
   add_foreign_key "diary_entries", "movies"
   add_foreign_key "diary_entries", "users"
+  add_foreign_key "favorites", "movies"
+  add_foreign_key "favorites", "users"
   add_foreign_key "ratings", "movies"
   add_foreign_key "ratings", "users"
   add_foreign_key "watchlists", "movies"

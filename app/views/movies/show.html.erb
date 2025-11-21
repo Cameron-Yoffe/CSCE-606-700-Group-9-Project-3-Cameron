@@ -1,5 +1,31 @@
 <main class="min-h-screen bg-neutral-25 px-6 py-12">
   <section class="mx-auto max-w-4xl space-y-8 rounded-3xl border border-neutral-100 bg-white/90 p-8 shadow-card backdrop-blur">
+    <% movie_record = nil %>
+    <% favorite = nil %>
+    <% if logged_in? %>
+      <% movie_record = Movie.find_or_initialize_by(tmdb_id: @movie["id"]) %>
+      <% if movie_record.new_record? %>
+        <% movie_record.assign_attributes(
+          title: @movie["title"],
+          poster_url: poster_url(@movie["poster_path"], size: "w342"),
+          description: @movie["overview"],
+          vote_average: @movie["vote_average"],
+          vote_count: @movie["vote_count"],
+          release_date: @movie["release_date"].present? ? Date.parse(@movie["release_date"]) : nil,
+          runtime: @movie["runtime"],
+          genres: @movie["genres"]&.map { |g| g["name"] }&.to_json,
+          director: director_name(@movie),
+          cast: @movie["cast"]&.to_json
+        ) %>
+        <% movie_record.save! %>
+      <% else %>
+        <% if movie_record.poster_url.blank? && @movie["poster_path"].present? %>
+          <% movie_record.update(poster_url: poster_url(@movie["poster_path"], size: "w342")) %>
+        <% end %>
+      <% end %>
+      <% favorite = current_user.favorites.find_by(movie: movie_record) %>
+      <% watchlist_entry = current_user.watchlists.find_by(movie: movie_record) %>
+    <% end %>
     <header class="flex flex-col gap-6 md:flex-row md:items-center md:gap-8">
       <%= image_tag poster_url(@movie["poster_path"], size: "w342"), alt: @movie["title"], class: "h-72 w-48 rounded-2xl object-cover shadow-md" %>
       <div class="space-y-2">
@@ -41,20 +67,7 @@
       </div>
       <div class="rounded-2xl border border-neutral-100 bg-white p-4 shadow-sm">
         <h3 class="text-lg font-semibold text-slate-900">Your Rating</h3>
-        <% if logged_in? %>
-          <% movie_record = Movie.find_by(tmdb_id: @movie["id"]) || Movie.create!(
-            title: @movie["title"],
-            tmdb_id: @movie["id"],
-            poster_url: @movie["poster_path"],
-            description: @movie["overview"],
-            vote_average: @movie["vote_average"],
-            vote_count: @movie["vote_count"],
-            release_date: @movie["release_date"].present? ? Date.parse(@movie["release_date"]) : nil,
-            runtime: @movie["runtime"],
-            genres: @movie["genres"]&.map { |g| g["name"] }&.to_json,
-            director: director_name(@movie),
-            cast: @movie["cast"]&.to_json
-          ) %>
+        <% if logged_in? && movie_record.present? %>
           <div class="mt-2">
             <%= render "ratings/star_rating", movie: movie_record, show_form: true %>
           </div>
@@ -65,9 +78,14 @@
     </div>
 
     <div class="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
-      <% if logged_in? %>
-        <div class="flex gap-3">
-          <%= link_to "Add to Favorites", new_diary_entry_path(movie_id: @movie["id"]), class: "px-4 py-2 bg-brand-600 text-white font-semibold rounded-lg hover:bg-brand-700 transition" %>
+      <% if logged_in? && movie_record.present? %>
+        <div class="flex flex-wrap gap-3">
+          <%= link_to "Log Movie", new_diary_entry_path(movie_id: movie_record.id), class: "px-4 py-2 bg-brand-600 text-white font-semibold rounded-lg hover:bg-brand-700 transition" %>
+          <% if favorite.present? %>
+            <%= button_to "Favorited", favorite_path(favorite), method: :delete, class: "px-4 py-2 bg-green-50 text-green-800 font-semibold rounded-lg hover:bg-green-100 transition" %>
+          <% else %>
+            <%= button_to "Favorite", favorites_path, method: :post, params: { movie_id: movie_record.id }, class: "px-4 py-2 bg-neutral-200 text-slate-900 font-semibold rounded-lg hover:bg-neutral-300 transition" %>
+          <% end %>
           <%= form_with url: watchlists_path, method: :post, local: true, class: "inline" do |f| %>
             <%= f.hidden_field :tmdb_id, value: @movie["id"] %>
             <%= f.hidden_field :title, value: @movie["title"] %>
@@ -76,7 +94,7 @@
           <% end %>
         </div>
       <% else %>
-        <p class="text-slate-600"><%= link_to "Sign in", sign_in_path, class: "text-brand-600 font-semibold hover:text-brand-700" %> to add to favorites</p>
+        <p class="text-slate-600"><%= link_to "Sign in", sign_in_path, class: "text-brand-600 font-semibold hover:text-brand-700" %> to log movies and manage favorites</p>
       <% end %>
       <div class="text-right">
         <%= link_to "Back to search", movies_path(query: @movie["title"]), class: "text-brand-600 font-semibold hover:text-brand-700" %>
