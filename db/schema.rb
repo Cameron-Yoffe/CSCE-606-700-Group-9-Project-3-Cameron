@@ -37,6 +37,16 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_21_051358) do
     t.index ["user_id"], name: "index_favorites_on_user_id"
   end
 
+  create_table "movie_tags", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "movie_id", null: false
+    t.integer "tag_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["movie_id", "tag_id"], name: "index_movie_tags_on_movie_id_and_tag_id", unique: true
+    t.index ["movie_id"], name: "index_movie_tags_on_movie_id"
+    t.index ["tag_id"], name: "index_movie_tags_on_tag_id"
+  end
+
   create_table "movies", force: :cascade do |t|
     t.string "backdrop_url"
     t.text "cast", default: "[]"
@@ -68,6 +78,17 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_21_051358) do
     t.index ["user_id", "movie_id"], name: "index_ratings_on_user_id_and_movie_id", unique: true
     t.index ["user_id"], name: "index_ratings_on_user_id"
     t.index ["value"], name: "index_ratings_on_value"
+  end
+
+  create_table "tags", force: :cascade do |t|
+    t.string "category", default: "general"
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.string "parent_category"
+    t.datetime "updated_at", null: false
+    t.index ["category"], name: "index_tags_on_category"
+    t.index ["name"], name: "index_tags_on_name", unique: true
+    t.index ["parent_category"], name: "index_tags_on_parent_category"
   end
 
   create_table "users", force: :cascade do |t|
@@ -104,6 +125,8 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_21_051358) do
   add_foreign_key "diary_entries", "users"
   add_foreign_key "favorites", "movies"
   add_foreign_key "favorites", "users"
+  add_foreign_key "movie_tags", "movies"
+  add_foreign_key "movie_tags", "tags"
   add_foreign_key "ratings", "movies"
   add_foreign_key "ratings", "users"
   add_foreign_key "watchlists", "movies"
