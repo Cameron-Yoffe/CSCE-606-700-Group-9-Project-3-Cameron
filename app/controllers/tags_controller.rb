@@ -41,7 +41,7 @@ class TagsController < ApplicationController
   def destroy
     movie = @movie
     tag_id = params[:id]
-    
+
     # Attempt to find and delete the movie_tag record
     movie_tag = movie.movie_tags.find_by(tag_id: tag_id)
 
@@ -54,7 +54,7 @@ class TagsController < ApplicationController
       # If movie_tag not found, check if tag exists at all
       tag_exists = Tag.exists?(tag_id)
       error_message = tag_exists ? "Tag is not associated with this movie" : "Tag does not exist"
-      
+
       respond_to do |format|
         format.json { render json: { success: false, errors: [ error_message ] }, status: :unprocessable_entity }
         format.html { redirect_back fallback_location: movie_path(movie.tmdb_id), alert: error_message }
