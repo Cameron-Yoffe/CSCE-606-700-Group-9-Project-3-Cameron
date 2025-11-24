@@ -40,7 +40,7 @@ class TagsController < ApplicationController
 
   def destroy
     movie = @movie
-    tag_id = params[:id]
+    tag_id = params[:id].to_i
 
     # Attempt to find and delete the movie_tag record
     movie_tag = movie.movie_tags.find_by(tag_id: tag_id)
