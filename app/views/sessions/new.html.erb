@@ -1,33 +1,222 @@
-<div class="min-h-screen flex items-center justify-center bg-gray-100">
-  <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-    <h1 class="text-2xl font-bold mb-6 text-center">Sign In</h1>
+<!-- app/views/sessions/new.html.erb - COMPLETELY FRESH -->
 
-    <% if flash[:alert] %>
-      <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
-        <%= flash[:alert] %>
+<!-- Styled Navbar - Dark Version -->
+<nav class="absolute top-0 left-0 right-0 z-50 bg-slate-800/95 backdrop-blur-sm shadow-lg border-b border-slate-700">
+  <div class="container mx-auto px-6 py-4">
+    <div class="flex items-center justify-between">
+      <!-- Logo/Brand -->
+      <%= link_to root_path, class: "group" do %>
+        <span class="text-2xl font-black text-white group-hover:text-amber-400 transition-colors">
+          Movie Diary
+        </span>
+      <% end %>
+
+      <!-- Navigation Links -->
+      <div class="flex items-center space-x-3">
+        <!-- Movies Button - Matching style -->
+        <%= link_to movies_path, class: "inline-flex items-center px-6 py-2.5 bg-slate-700 hover:bg-slate-800 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-200" do %>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
+          </svg>
+          Movies
+        <% end %>
+
+        <!-- Sign In Button -->
+        <%= link_to sign_in_path, class: "inline-flex items-center px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200" do %>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+          </svg>
+          Sign In
+        <% end %>
+
+        <!-- Create Account Button -->
+        <%= link_to sign_up_path, class: "inline-flex items-center px-5 py-2.5 bg-gradient-to-r from-slate-800 to-slate-900 hover:from-slate-900 hover:to-black text-white font-semibold rounded-xl shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200" do %>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+          </svg>
+          Create Account
+        <% end %>
       </div>
-    <% end %>
+    </div>
+  </div>
+</nav>
 
-    <form action="<%= sign_in_path %>" method="post">
-      <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
+<div class="min-h-screen grid lg:grid-cols-2">
+  <!-- Left Side - Cinema Background -->
+  <div class="hidden lg:flex relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 overflow-hidden">
+    <!-- Background Image -->
+    <div class="absolute inset-0 bg-cover bg-center opacity-40" style="background-image: url('https://images.unsplash.com/photo-1594908900066-3f47337549d8?w=1200&q=80');"></div>
+    
+    <!-- Overlay Gradient -->
+    <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/50 to-transparent"></div>
+    
+    <!-- Content - NO BIG STAR -->
+    <div class="relative z-10 flex flex-col justify-center items-center p-12 text-white text-center h-full">
+      <div class="space-y-8 max-w-3xl">
+        <!-- Title - NO EMOJI/ICON -->
+        <div class="flex items-center justify-center mb-8">
+          <h1 class="text-6xl font-black tracking-tight text-amber-400 drop-shadow-2xl">
+            Movie Diary
+          </h1>
+        </div>
 
-      <div class="mb-4">
-        <label for="email" class="block text-gray-700 text-sm font-bold mb-2">Email</label>
-        <input type="email" id="email" name="email" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600">
+        <!-- Decorative Line -->
+        <div class="flex items-center justify-center gap-4 mb-8">
+          <div class="h-px w-20 bg-gradient-to-r from-transparent to-amber-400/60"></div>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-amber-400" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+          </svg>
+          <div class="h-px w-20 bg-gradient-to-l from-transparent to-amber-400/60"></div>
+        </div>
+        
+        <!-- Quote -->
+        <blockquote class="space-y-6 mb-8">
+          <p class="text-2xl md:text-3xl font-black italic leading-relaxed drop-shadow-lg text-white">
+            "Cinema is a mirror by which we<br/>often see ourselves."
+          </p>
+          <footer class="text-amber-400 font-black text-xl tracking-wide">
+            — Alejandro González Iñárritu
+          </footer>
+        </blockquote>
+
+        <!-- Decorative Line -->
+        <div class="flex items-center justify-center gap-3 pt-6">
+          <div class="h-1 w-12 bg-amber-400/30 rounded-full"></div>
+          <div class="h-1 w-8 bg-amber-400/50 rounded-full"></div>
+          <div class="h-1 w-4 bg-amber-400/70 rounded-full"></div>
+        </div>
+        
+        <!-- Feature Text with Small Stars - Horizontal -->
+        <div class="flex items-center justify-center gap-8 pt-12">
+          <div class="flex items-center gap-2 text-white">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-amber-400" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+            </svg>
+            <span class="text-base font-black tracking-wide">Track Films</span>
+          </div>
+          
+          <div class="flex items-center gap-2 text-white">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-amber-400" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+            </svg>
+            <span class="text-base font-black tracking-wide">Rate & Review</span>
+          </div>
+          
+          <div class="flex items-center gap-2 text-white">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-amber-400" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+            </svg>
+            <span class="text-base font-black tracking-wide">Save Favorites</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Side - Sign In Form -->
+  <div class="flex items-center justify-center px-6 py-12 bg-gradient-to-br from-neutral-50 via-white to-neutral-50">
+    <div class="w-full max-w-md space-y-8">
+      <!-- Sign In Card -->
+      <div class="bg-white rounded-3xl shadow-2xl border border-neutral-100 p-8 md:p-10">
+        <!-- Header -->
+        <div class="text-center mb-8">
+          <h2 class="text-3xl font-bold text-slate-900 mb-2">
+            Welcome Back
+          </h2>
+          <p class="text-slate-600">
+            Continue your movie journey
+          </p>
+        </div>
+
+        <!-- Flash Messages -->
+        <% if flash[:alert] %>
+          <div class="mb-6 p-4 bg-red-100 border-l-4 border-red-500 text-red-700 rounded-lg">
+            <div class="flex items-start">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span><%= flash[:alert] %></span>
+            </div>
+          </div>
+        <% end %>
+
+        <!-- Sign In Form -->
+        <form action="<%= sign_in_path %>" method="post" class="space-y-6">
+          <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
+
+          <!-- Email Field -->
+          <div>
+            <label for="email" class="block text-sm font-semibold text-slate-700 mb-2">
+              Email
+            </label>
+            <input 
+              type="email" 
+              id="email" 
+              name="email" 
+              required 
+              autocomplete="email"
+              placeholder="your@email.com"
+              class="w-full px-4 py-3 rounded-xl border border-neutral-300 text-slate-900 placeholder-slate-400 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 transition-all"
+            >
+          </div>
+
+          <!-- Password Field -->
+          <div>
+            <label for="password" class="block text-sm font-semibold text-slate-700 mb-2">
+              Password
+            </label>
+            <input 
+              type="password" 
+              id="password" 
+              name="password" 
+              required 
+              autocomplete="current-password"
+              placeholder="••••••••"
+              class="w-full px-4 py-3 rounded-xl border border-neutral-300 text-slate-900 placeholder-slate-400 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 transition-all"
+            >
+          </div>
+
+          <!-- Sign In Button -->
+          <button type="submit" class="w-full py-3.5 px-6 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 text-lg">
+            Sign In
+          </button>
+        </form>
+
+        <!-- Divider -->
+        <div class="relative my-8">
+          <div class="absolute inset-0 flex items-center">
+            <div class="w-full border-t border-neutral-200"></div>
+          </div>
+          <div class="relative flex justify-center text-sm">
+            <span class="px-4 bg-white text-slate-500">Don't have an account?</span>
+          </div>
+        </div>
+
+        <!-- Sign Up Link -->
+        <div class="text-center">
+          <%= link_to sign_up_path, class: "inline-flex items-center justify-center w-full py-3 px-6 bg-slate-800 hover:bg-slate-900 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200" do %>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+            </svg>
+            Sign Up
+          <% end %>
+        </div>
+
+        <!-- Browse as Guest -->
+        <div class="text-center mt-6">
+          <%= link_to movies_path, class: "inline-flex items-center text-sm text-slate-600 hover:text-amber-600 font-medium transition-colors" do %>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            Browse movies without signing in
+          <% end %>
+        </div>
       </div>
 
-      <div class="mb-6">
-        <label for="password" class="block text-gray-700 text-sm font-bold mb-2">Password</label>
-        <input type="password" id="password" name="password" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600">
-      </div>
-
-      <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md">
-        Sign In
-      </button>
-    </form>
-
-    <p class="text-center text-gray-600 mt-4">
-      Don't have an account? <a href="<%= sign_up_path %>" class="text-blue-600 hover:underline">Create one</a>
-    </p>
+      <!-- Footer -->
+      <p class="text-center text-sm text-slate-500">
+        By signing in, you agree to our Terms of Service and Privacy Policy
+      </p>
+    </div>
   </div>
 </div>

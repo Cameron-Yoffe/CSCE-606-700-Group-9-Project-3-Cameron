@@ -1,12 +1,16 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
-set -euo pipefail
-
-cd "$(dirname "$0")/.."
-
-if ! bundle exec foreman version >/dev/null 2>&1; then
-  echo "Foreman is not installed. Run \`bundle install\` to install project gems." >&2
-  exit 1
+if ! gem list foreman -i --silent; then
+  echo "Installing foreman..."
+  gem install foreman
 fi
 
-exec bundle exec foreman start -f Procfile.dev "$@"
+# Default to port 3000 if not specified
+export PORT="${PORT:-3000}"
+
+# Let the debug gem allow remote connections,
+# but avoid loading until `debugger` is called
+export RUBY_DEBUG_OPEN="true"
+export RUBY_DEBUG_LAZY="true"
+
+exec foreman start -f Procfile.dev "$@"

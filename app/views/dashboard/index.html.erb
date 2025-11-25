@@ -1,0 +1,95 @@
+<!-- app/views/dashboard/index.html.erb -->
+
+<div class="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-12">
+  <div class="container mx-auto px-6">
+    
+    <!-- Welcome Header -->
+    <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-12">
+      <div>
+        <h1 class="text-4xl md:text-5xl font-black text-white mb-2">
+          Welcome, <%= @user.first_name || @user.username %>! 🎬
+        </h1>
+        <p class="text-xl text-slate-400">
+          Ready to discover your next favorite film?
+        </p>
+      </div>
+      <div class="flex gap-3">
+        <%= link_to profile_path, class: "inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200" do %>
+          View Profile
+        <% end %>
+        <%= button_to logout_path, method: :delete, class: "inline-flex items-center px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200" do %>
+          Sign Out
+        <% end %>
+      </div>
+    </div>
+
+    <!-- My Library Section -->
+    <section class="rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 p-8">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 class="text-3xl font-black text-white mb-2">My Library</h2>
+          <p class="text-slate-400">Your personal movie collection</p>
+        </div>
+        <%= link_to movies_path, class: "inline-flex items-center px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200" do %>
+          Search Movies
+        <% end %>
+      </div>
+
+      <% watchlists = @user.watchlists.includes(:movie) %>
+      <% if watchlists.any? %>
+        <%= turbo_frame_tag "library-list" do %>
+          <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <% watchlists.each do |wl| %>
+              <%= turbo_frame_tag "watchlist-item-#{wl.id}" do %>
+                <% m = wl.movie %>
+                <div class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-700 to-slate-800 border border-slate-600 hover:border-amber-500 transition-all duration-300 hover:shadow-2xl hover:shadow-amber-500/20">
+                  <div class="relative overflow-hidden">
+                    <%= image_tag m.poster_url.presence || "https://placehold.co/300x450?text=No+Image", alt: m.title, class: "w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500" %>
+                    <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/50 to-transparent opacity-60"></div>
+                    <div class="absolute top-3 right-3">
+                      <%= button_to watchlist_path(wl), method: :delete, data: { turbo_frame: "watchlist-item-#{wl.id}" }, class: "inline-flex items-center rounded-lg bg-red-600/90 hover:bg-red-700 backdrop-blur-sm px-3 py-2 text-xs text-white font-bold transition-all shadow-lg" do %>
+                        Remove
+                      <% end %>
+                    </div>
+                    <div class="absolute top-3 left-3">
+                      <span class="inline-flex items-center rounded-lg bg-blue-600/90 backdrop-blur-sm px-3 py-1 text-xs text-white font-bold shadow-lg">
+                        <%= wl.status.humanize %>
+                      </span>
+                    </div>
+                  </div>
+                  <div class="p-5 space-y-3">
+                    <h3 class="font-bold text-lg text-white line-clamp-2 group-hover:text-amber-400 transition-colors">
+                      <%= m.title %>
+                    </h3>
+                    <div class="flex items-center gap-2">
+                      <%= render "ratings/star_rating", movie: m, show_form: false %>
+                    </div>
+                    <%= link_to movie_path(m.tmdb_id), class: "block w-full text-center px-4 py-2 bg-slate-600 hover:bg-slate-500 text-white font-semibold rounded-lg transition-all mt-3" do %>
+                      View Details
+                    <% end %>
+                  </div>
+                </div>
+              <% end %>
+            <% end %>
+          </div>
+        <% end %>
+      <% else %>
+        <div class="text-center py-16 px-4 rounded-xl bg-slate-900/50 border-2 border-dashed border-slate-700">
+          <div class="w-20 h-20 mx-auto mb-6 rounded-full bg-slate-800 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
+            </svg>
+          </div>
+          <h3 class="text-2xl font-bold text-white mb-3">Your library is empty</h3>
+          <p class="text-slate-400 mb-8 max-w-md mx-auto text-lg">
+            Start your movie journey by searching and adding films to your collection!
+          </p>
+          <%= link_to movies_path, class: "inline-flex items-center px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200" do %>
+            Add Your First Movie
+          <% end %>
+        </div>
+      <% end %>
+    </section>
+
+  </div>
+</div>
