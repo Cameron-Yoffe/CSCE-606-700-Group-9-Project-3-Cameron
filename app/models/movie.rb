@@ -7,6 +7,8 @@ class Movie < ApplicationRecord
   has_many :ratings, dependent: :destroy
   has_many :watchlists, dependent: :destroy
   has_many :users, through: :watchlists
+  has_many :movie_tags, dependent: :destroy
+  has_many :tags, through: :movie_tags
 
   # Validations
   validates :title, presence: true, length: { minimum: 1, maximum: 255 }

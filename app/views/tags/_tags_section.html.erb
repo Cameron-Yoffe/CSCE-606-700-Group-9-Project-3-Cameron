@@ -1,0 +1,246 @@
+<div class="space-y-4">
+  <h3 class="text-lg font-semibold text-slate-900">Tags</h3>
+
+  <% if logged_in? %>
+    <!-- Tags Display -->
+    <div class="flex flex-wrap gap-2">
+      <% movie.tags.each do |tag| %>
+        <div class="inline-flex items-center gap-2 rounded-full bg-gray-200 px-3 py-1 text-sm font-medium text-gray-800" data-movie-tag-id="<%= tag.id %>" style="background-color: rgb(229, 231, 235); color: rgb(31, 41, 55); border-radius: 9999px; padding: 4px 12px; display: inline-flex; align-items: center; gap: 8px;">
+          <span><%= tag.name %></span>
+          <button type="button" class="remove-tag-btn hover:text-gray-900 cursor-pointer text-lg leading-none font-bold" title="Remove tag" data-tag-id="<%= tag.id %>" style="background: none; border: none; padding: 0; color: inherit; cursor: pointer;">×</button>
+        </div>
+      <% end %>
+    </div>
+
+    <!-- Add Tags Section -->
+    <div class="rounded-lg border border-gray-200 bg-gray-50 p-4">
+      <label class="block text-sm font-medium text-slate-700 mb-3">Add tags from available options</label>
+
+      <!-- Main Categories -->
+      <div class="space-y-2">
+        <div class="flex flex-wrap gap-2">
+          <% Tag::MAIN_CATEGORIES.each do |category| %>
+            <button
+              type="button"
+              class="tag-category-btn inline-flex items-center gap-1 rounded-full bg-blue-100 px-4 py-1.5 text-sm font-medium text-blue-700 hover:bg-blue-200 transition-colors"
+              data-category="<%= category %>"
+              style="background-color: rgb(219, 234, 254); color: rgb(29, 78, 216); border: none; padding: 6px 16px;"
+            >
+              <span><%= category.capitalize %></span>
+              <span class="text-lg">+</span>
+            </button>
+          <% end %>
+        </div>
+      </div>
+
+      <!-- Subcategories (hidden by default) -->
+      <div id="subcategories-container" class="mt-4 space-y-3 hidden">
+        <div id="subcategories-list" class="flex flex-wrap gap-2"></div>
+      </div>
+
+      <!-- Hidden data with tag mappings -->
+      <div id="tag-mappings" style="display: none;">
+        <% Tag::MAIN_CATEGORIES.each do |category| %>
+          <!-- Main category tag -->
+          <% main_tag = Tag.find_by(name: category) %>
+          <% if main_tag %>
+            <div class="tag-mapping" data-category="<%= category %>" data-tag-name="<%= main_tag.name %>" data-tag-id="<%= main_tag.id %>"></div>
+          <% end %>
+          <!-- Subcategory tags -->
+          <% Tag.subcategories_for(category).each do |tag| %>
+            <div class="tag-mapping" data-category="<%= category %>" data-tag-name="<%= tag.name %>" data-tag-id="<%= tag.id %>"></div>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+
+    <script>
+      // Initialize tag system with event delegation
+      function initializeTagSystem() {
+        const tagMappings = document.querySelectorAll('.tag-mapping');
+        
+        // Build tag mappings from data attributes
+        const categoryTags = {};
+        tagMappings.forEach(mapping => {
+          const category = mapping.getAttribute('data-category');
+          const tagName = mapping.getAttribute('data-tag-name');
+          const tagId = mapping.getAttribute('data-tag-id');
+
+          if (!categoryTags[category]) {
+            categoryTags[category] = [];
+          }
+          
+          if (tagId) {
+            categoryTags[category].push({ name: tagName, id: parseInt(tagId) });
+          }
+        });
+
+        console.log('Category Tags initialized:', categoryTags);
+
+        // Event delegation for category buttons
+        document.addEventListener('click', function(e) {
+          if (e.target.classList.contains('tag-category-btn') || e.target.closest('.tag-category-btn')) {
+            e.preventDefault();
+            const btn = e.target.closest('.tag-category-btn');
+            const category = btn.getAttribute('data-category');
+            console.log('Clicked category:', category);
+            const tags = categoryTags[category] || [];
+            console.log('Tags for category:', tags);
+            displaySubcategories(tags);
+          }
+        });
+
+        // Event delegation for remove tag buttons
+        document.addEventListener('click', function(e) {
+          if (e.target.classList.contains('remove-tag-btn')) {
+            e.preventDefault();
+            const tagId = parseInt(e.target.getAttribute('data-tag-id'));
+            removeTagFromMovie(tagId);
+          }
+        });
+
+        function displaySubcategories(tags) {
+          const subcategoriesContainer = document.getElementById('subcategories-container');
+          const subcategoriesList = document.getElementById('subcategories-list');
+          
+          if (!subcategoriesList) return;
+
+          // Clear and update subcategories
+          subcategoriesList.innerHTML = '';
+          tags.forEach(tag => {
+            const tagContainer = document.createElement('div');
+            tagContainer.className = 'inline-flex items-center gap-2 rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-700';
+            
+            const tagButton = document.createElement('button');
+            tagButton.type = 'button';
+            tagButton.className = 'tag-option-btn font-medium hover:underline';
+            tagButton.style.background = 'none';
+            tagButton.style.border = 'none';
+            tagButton.style.padding = '0';
+            tagButton.style.color = 'inherit';
+            tagButton.style.cursor = 'pointer';
+            tagButton.textContent = tag.name;
+            tagButton.setAttribute('data-tag-id', tag.id);
+
+            const addButton = document.createElement('button');
+            addButton.type = 'button';
+            addButton.className = 'add-tag-option-btn hover:text-blue-900 cursor-pointer text-lg leading-none font-bold';
+            addButton.style.background = 'none';
+            addButton.style.border = 'none';
+            addButton.style.padding = '0';
+            addButton.style.color = 'inherit';
+            addButton.style.cursor = 'pointer';
+            addButton.textContent = '+';
+            addButton.setAttribute('title', 'Add tag');
+            addButton.setAttribute('data-tag-id', tag.id);
+
+            tagButton.addEventListener('click', function(e) {
+              e.preventDefault();
+              addTagToMovie(tag.id);
+            });
+
+            addButton.addEventListener('click', function(e) {
+              e.preventDefault();
+              const tagIdToAdd = addButton.getAttribute('data-tag-id');
+              addTagToMovie(tagIdToAdd);
+            });
+
+            tagContainer.appendChild(tagButton);
+            tagContainer.appendChild(addButton);
+            subcategoriesList.appendChild(tagContainer);
+          });
+
+          // Show subcategories container
+          if (subcategoriesContainer && subcategoriesContainer.classList.contains('hidden')) {
+            subcategoriesContainer.classList.remove('hidden');
+          }
+        }
+
+        function addTagToMovie(tagId) {
+          const movieTagsPath = document.querySelector('[data-movie-tags-path]')?.getAttribute('data-movie-tags-path') || '<%= movie_tags_path(movie) %>';
+          fetch(movieTagsPath, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({
+              tag_id: tagId
+            })
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              location.reload();
+            } else {
+              alert(data.errors[0] || 'Error adding tag');
+            }
+          });
+        }
+
+        function removeTagFromMovie(tagId) {
+          console.log('Removing tag:', tagId);
+          const movieTagsPath = document.querySelector('[data-movie-tags-path]')?.getAttribute('data-movie-tags-path') || '<%= movie_tags_path(movie) %>';
+          const tagElement = document.querySelector('[data-movie-tag-id="' + tagId + '"]');
+          
+          fetch(movieTagsPath + '/' + tagId, {
+            method: 'DELETE',
+            headers: {
+              'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+          })
+          .then(response => response.json())
+          .then(data => {
+            console.log('Delete response:', data);
+            if (data.success) {
+              // Find and remove the tag from the display
+              if (tagElement) {
+                tagElement.remove();
+                console.log('Tag element removed from DOM');
+              }
+            } else {
+              // Still remove from DOM even if there's an error, and don't show alert
+              if (tagElement) {
+                tagElement.remove();
+                console.log('Tag removed from DOM (error occurred but tag was removed from display)');
+              }
+              console.log('Error removing tag:', data.errors);
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            // Still remove from DOM on error
+            if (tagElement) {
+              tagElement.remove();
+              console.log('Tag removed from DOM (request failed)');
+            }
+          });
+        }
+      }
+
+      // Initialize on DOMContentLoaded and also on Turbo load
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializeTagSystem);
+      } else {
+        initializeTagSystem();
+      }
+
+      // Also reinitialize when Turbo navigates
+      document.addEventListener('turbo:load', initializeTagSystem);
+    </script>
+  <% else %>
+    <% if movie.tags.any? %>
+      <div class="flex flex-wrap gap-2">
+        <% movie.tags.each do |tag| %>
+          <div class="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-700">
+            <%= tag.name %>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <p class="text-sm text-slate-600">No tags yet. <%= link_to "Sign in", sign_in_path, class: "text-blue-600 hover:underline" %> to add tags.</p>
+    <% end %>
+  <% end %>
+</div>
+
+

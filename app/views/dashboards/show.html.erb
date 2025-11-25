@@ -33,6 +33,17 @@
                   <div class="pt-1">
                     <%= render "ratings/star_rating", movie: m, show_form: false %>
                   </div>
+
+                  <!-- Tags -->
+                  <% if m.tags.any? %>
+                    <div class="flex flex-wrap gap-1 pt-2">
+                      <% m.tags.each do |tag| %>
+                        <span class="inline-flex items-center rounded-full bg-gray-200 px-2 py-0.5 text-xs font-medium text-gray-800" style="background-color: rgb(229, 231, 235); color: rgb(31, 41, 55); border-radius: 9999px; padding: 2px 8px; display: inline-flex; align-items: center;">
+                          <%= tag.name %>
+                        </span>
+                      <% end %>
+                    </div>
+                  <% end %>
                 </div>
               </div>
             <% end %>

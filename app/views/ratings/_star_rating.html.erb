@@ -7,15 +7,25 @@
     <div class="flex items-center gap-1">
       <div class="flex gap-0.5">
         <% (1..5).each do |star| %>
-          <% is_filled = star <= current_value %>
-          <svg class="h-4 w-4 <%= is_filled ? 'fill-yellow-400 text-yellow-400' : 'fill-gray-300 text-gray-300' %>" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-            <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
-          </svg>
+          <% full_stars = current_value / 2.0 %>
+          <% is_filled = star <= full_stars %>
+          <% is_half = (star - 1 < full_stars) && (full_stars < star) %>
+          
+          <div class="relative w-4 h-4">
+            <!-- Gray background star -->
+            <svg class="absolute h-4 w-4 fill-gray-300 text-gray-300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+              <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+            </svg>
+            <!-- Filled star (full or half) -->
+            <svg class="absolute h-4 w-4 <%= is_filled ? 'fill-yellow-400 text-yellow-400' : (is_half ? 'fill-yellow-400 text-yellow-400' : 'fill-gray-300 text-gray-300') %>" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" style="<%= is_half ? 'clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);' : '' %>">
+              <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+            </svg>
+          </div>
         <% end %>
       </div>
       <span class="text-xs text-slate-600 font-medium">
         <% if current_value > 0 %>
-          <%= current_value %>/5
+          <%= (current_value / 2.0).round(1) %>/5 (<%=current_value%>/10)
         <% else %>
           Not rated
         <% end %>
@@ -30,18 +40,50 @@
         <div class="rounded-lg border border-gray-200 bg-gray-50 p-4">
           <label class="block text-sm font-medium text-slate-700 mb-3">Rate this movie</label>
           
+          <!-- Show previous rating if exists -->
+          <% if rating && rating.value > 0 %>
+            <div class="mb-3 p-2 bg-blue-50 rounded flex items-center gap-2">
+              <p class="text-xs text-slate-600">Your previous rating:</p>
+              <div class="flex gap-1">
+                <% (1..5).each do |star| %>
+                  <% full_stars = rating.value / 2.0 %>
+                  <% is_filled = star <= full_stars %>
+                  <% is_half = (star - 1 < full_stars) && (full_stars < star) %>
+                  
+                  <div class="relative inline-block" style="width: 16px; height: 16px;">
+                    <!-- Gray background star -->
+                    <svg class="absolute h-4 w-4 fill-gray-300 text-gray-300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                      <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+                    </svg>
+                    <!-- Filled star (full or half) -->
+                    <svg class="absolute h-4 w-4 <%= is_filled ? 'fill-yellow-400 text-yellow-400' : (is_half ? 'fill-yellow-400 text-yellow-400' : 'fill-gray-300 text-gray-300') %>" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" style="<%= is_half ? 'clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);' : '' %>">
+                      <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+                    </svg>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+          
           <% if rating %>
             <%= form_with(model: rating, local: true, method: :patch) do |f| %>
               <div class="flex gap-2 mb-3">
                 <% (1..5).each do |star| %>
                   <button 
                     type="button" 
-                    class="star-btn p-0 transition-transform hover:scale-110 focus:outline-none"
-                    data-value="<%= star %>"
+                    class="star-btn-container p-0 transition-transform hover:scale-110 focus:outline-none relative w-8 h-8 cursor-pointer"
+                    data-star="<%= star %>"
                   >
-                    <svg class="h-8 w-8 <%= star <= current_value ? 'fill-yellow-400 text-yellow-400' : 'fill-gray-300 text-gray-300 hover:fill-yellow-300' %>" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                    <svg class="absolute h-8 w-8 fill-gray-300 text-gray-300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                       <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
                     </svg>
+                    <svg class="star-display absolute h-8 w-8 fill-gray-300 text-gray-300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                      <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+                    </svg>
+                    <!-- Left half (for hover effect) -->
+                    <div class="absolute left-0 top-0 w-1/2 h-full cursor-pointer"></div>
+                    <!-- Right half (for hover effect) -->
+                    <div class="absolute right-0 top-0 w-1/2 h-full cursor-pointer"></div>
                   </button>
                 <% end %>
               </div>
@@ -55,12 +97,19 @@
                 <% (1..5).each do |star| %>
                   <button 
                     type="button" 
-                    class="star-btn p-0 transition-transform hover:scale-110 focus:outline-none"
-                    data-value="<%= star %>"
+                    class="star-btn-container p-0 transition-transform hover:scale-110 focus:outline-none relative w-8 h-8 cursor-pointer"
+                    data-star="<%= star %>"
                   >
-                    <svg class="h-8 w-8 fill-gray-300 text-gray-300 hover:fill-yellow-300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                    <svg class="absolute h-8 w-8 fill-gray-300 text-gray-300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                       <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
                     </svg>
+                    <svg class="star-display absolute h-8 w-8 fill-gray-300 text-gray-300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                      <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+                    </svg>
+                    <!-- Left half (for hover effect) -->
+                    <div class="absolute left-0 top-0 w-1/2 h-full cursor-pointer"></div>
+                    <!-- Right half (for hover effect) -->
+                    <div class="absolute right-0 top-0 w-1/2 h-full cursor-pointer"></div>
                   </button>
                 <% end %>
               </div>
@@ -78,33 +127,30 @@
     <script>
       // Use event delegation at document level to handle star clicks
       document.addEventListener('click', function(e) {
-        const starBtn = e.target.closest('.star-btn');
-        if (!starBtn) return;
+        const starContainer = e.target.closest('.star-btn-container');
+        if (!starContainer) return;
         
         e.preventDefault();
         
-        const form = starBtn.closest('form');
+        const form = starContainer.closest('form');
         if (!form) return;
         
-        const value = starBtn.getAttribute('data-value');
-        const ratingInput = form.querySelector('.rating-value-input');
+        const starNum = parseInt(starContainer.getAttribute('data-star'));
+        const clickX = e.clientX - starContainer.getBoundingClientRect().left;
+        const containerWidth = starContainer.offsetWidth;
+        const isHalf = clickX < containerWidth / 2;
         
+        // Calculate value: full star = 2 points, half star = 1 point
+        const value = isHalf ? (starNum * 2 - 1) : (starNum * 2);
+        
+        const ratingInput = form.querySelector('.rating-value-input');
         if (!ratingInput) return;
         
         ratingInput.value = value;
+        form.setAttribute('data-current-rating', value);
         
         // Update visual state
-        const starBtns = form.querySelectorAll('.star-btn');
-        starBtns.forEach((b, idx) => {
-          const svg = b.querySelector('svg');
-          if (idx < value) {
-            svg.classList.remove('fill-gray-300', 'text-gray-300', 'hover:fill-yellow-300');
-            svg.classList.add('fill-yellow-400', 'text-yellow-400');
-          } else {
-            svg.classList.remove('fill-yellow-400', 'text-yellow-400');
-            svg.classList.add('fill-gray-300', 'text-gray-300', 'hover:fill-yellow-300');
-          }
-        });
+        updateStarDisplay(form, value);
         
         // Auto-submit the form
         setTimeout(() => {
@@ -112,46 +158,121 @@
         }, 100);
       });
       
-      // Use event delegation for hover effects
-      document.addEventListener('mouseenter', function(e) {
-        const starBtn = e.target.closest('.star-btn');
-        if (!starBtn) return;
-        
-        const form = starBtn.closest('form');
-        if (!form) return;
-        
-        const value = starBtn.getAttribute('data-value');
-        const starBtns = form.querySelectorAll('.star-btn');
-        
-        starBtns.forEach((b, idx) => {
-          const svg = b.querySelector('svg');
-          if (idx < value) {
-            svg.classList.add('fill-yellow-300');
+      // Update star display based on rating value
+      function updateStarDisplay(form, value) {
+        const containers = form.querySelectorAll('.star-btn-container');
+        containers.forEach((container, idx) => {
+          const starNum = idx + 1;
+          const starDisplay = container.querySelector('.star-display');
+          const fullValue = starNum * 2;
+          const halfValue = starNum * 2 - 1;
+          
+          // Remove all color classes first
+          starDisplay.classList.remove('fill-yellow-300', 'text-yellow-300', 'fill-yellow-400', 'text-yellow-400', 'fill-gray-300', 'text-gray-300');
+          
+          if (value >= fullValue) {
+            // Full star
+            starDisplay.classList.add('fill-yellow-400', 'text-yellow-400');
+            starDisplay.style.clipPath = 'none';
+          } else if (value === halfValue) {
+            // Half star
+            starDisplay.classList.add('fill-yellow-400', 'text-yellow-400');
+            starDisplay.style.clipPath = 'polygon(0 0, 50% 0, 50% 100%, 0 100%)';
           } else {
-            svg.classList.remove('fill-yellow-300');
+            // Empty star
+            starDisplay.classList.add('fill-gray-300', 'text-gray-300');
+            starDisplay.style.clipPath = 'none';
           }
         });
-      }, true);
+      }
       
-      // Reset hover effect when leaving form
-      document.addEventListener('mouseleave', function(e) {
-        const form = e.target.closest('form');
-        if (!form) return;
+      // Track the rating container for hover effects
+      document.querySelectorAll('form').forEach(form => {
+        // Initialize data attribute to 0 (no initial highlight)
+        form.setAttribute('data-current-rating', '0');
         
-        const ratingInput = form.querySelector('.rating-value-input');
-        if (!ratingInput) return;
+        const starContainerWrapper = form.querySelector('.flex.gap-2.mb-3');
+        if (!starContainerWrapper) return;
         
-        const currentValue = ratingInput.value;
-        const starBtns = form.querySelectorAll('.star-btn');
-        
-        starBtns.forEach((b, idx) => {
-          const svg = b.querySelector('svg');
-          if (idx < currentValue) {
-            svg.classList.add('fill-yellow-400');
-            svg.classList.remove('fill-yellow-300');
+        // Mouse move inside stars container
+        starContainerWrapper.addEventListener('mousemove', function(e) {
+          const star = e.target.closest('.star-btn-container');
+          
+          if (!star) {
+            // Not hovering over a star - reset to saved rating immediately
+            resetStarsToSaved();
+            return;
           }
+          
+          const starNum = parseInt(star.getAttribute('data-star'));
+          const clickX = e.clientX - star.getBoundingClientRect().left;
+          const containerWidth = star.offsetWidth;
+          const isHalf = clickX < containerWidth / 2;
+          
+          // Preview value on hover
+          const hoverValue = isHalf ? (starNum * 2 - 1) : (starNum * 2);
+          
+          const containers = form.querySelectorAll('.star-btn-container');
+          containers.forEach((container, idx) => {
+            const containerStarNum = idx + 1;
+            const starDisplay = container.querySelector('.star-display');
+            const fullValue = containerStarNum * 2;
+            const halfValue = containerStarNum * 2 - 1;
+            
+            // Remove all color classes first
+            starDisplay.classList.remove('fill-yellow-300', 'text-yellow-300', 'fill-yellow-400', 'text-yellow-400', 'fill-gray-300', 'text-gray-300');
+            
+            if (hoverValue >= fullValue) {
+              // Full star on hover
+              starDisplay.classList.add('fill-yellow-300', 'text-yellow-300');
+              starDisplay.style.clipPath = 'none';
+            } else if (hoverValue === halfValue) {
+              // Half star on hover
+              starDisplay.classList.add('fill-yellow-300', 'text-yellow-300');
+              starDisplay.style.clipPath = 'polygon(0 0, 50% 0, 50% 100%, 0 100%)';
+            } else {
+              // Empty star
+              starDisplay.classList.add('fill-gray-300', 'text-gray-300');
+              starDisplay.style.clipPath = 'none';
+            }
+          });
         });
-      }, true);
+        
+        // Function to reset stars to saved state
+        function resetStarsToSaved() {
+          const savedRating = parseInt(form.getAttribute('data-current-rating')) || 0;
+          const containers = form.querySelectorAll('.star-btn-container');
+          containers.forEach((container, idx) => {
+            const starNum = idx + 1;
+            const starDisplay = container.querySelector('.star-display');
+            const fullValue = starNum * 2;
+            const halfValue = starNum * 2 - 1;
+            
+            // Remove ALL color classes completely
+            starDisplay.classList.remove('fill-yellow-300', 'text-yellow-300', 'fill-yellow-400', 'text-yellow-400', 'fill-gray-300', 'text-gray-300');
+            starDisplay.offsetHeight; // force reflow
+            
+            if (savedRating >= fullValue) {
+              // Full star
+              starDisplay.classList.add('fill-yellow-400', 'text-yellow-400');
+              starDisplay.style.clipPath = 'none';
+            } else if (savedRating === halfValue) {
+              // Half star
+              starDisplay.classList.add('fill-yellow-400', 'text-yellow-400');
+              starDisplay.style.clipPath = 'polygon(0 0, 50% 0, 50% 100%, 0 100%)';
+            } else {
+              // Empty star
+              starDisplay.classList.add('fill-gray-300', 'text-gray-300');
+              starDisplay.style.clipPath = 'none';
+            }
+          });
+        }
+        
+        // Mouse leave - reset to current rating
+        starContainerWrapper.addEventListener('mouseleave', function(e) {
+          resetStarsToSaved();
+        });
+      });
     </script>
   <% end %>
 </div>
