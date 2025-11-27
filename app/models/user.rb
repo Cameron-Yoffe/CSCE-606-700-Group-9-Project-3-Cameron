@@ -9,6 +9,7 @@ class User < ApplicationRecord
   has_many :watchlists, dependent: :destroy
   has_many :movies, through: :watchlists
   has_many :favorite_movies, through: :favorites, source: :movie
+  has_many :review_reactions, dependent: :destroy
 
   # Validations
   validates :email, presence: true, uniqueness: true, format: { with: URI::MailTo::EMAIL_REGEXP, message: "must be a valid email address" }

@@ -11,7 +11,8 @@ Rails.application.routes.draw do
   end
   resources :favorites, only: %i[index create destroy]
   resources :watchlists, only: %i[create destroy]
-  resources :ratings, only: %i[create update]
+  resources :ratings, only: %i[create update destroy]
+  resources :review_reactions, only: %i[create]
   resources :diary_entries
 
   # Authentication routes

@@ -1,28 +1,28 @@
 <main class="min-h-screen bg-neutral-25 px-6 py-12">
   <section class="mx-auto max-w-4xl space-y-8 rounded-3xl border border-neutral-100 bg-white/90 p-8 shadow-card backdrop-blur">
-    <% movie_record = nil %>
+    <% movie_record = Movie.find_or_initialize_by(tmdb_id: @movie["id"]) %>
+    <% if movie_record.new_record? %>
+      <% movie_record.assign_attributes(
+        title: @movie["title"],
+        poster_url: poster_url(@movie["poster_path"], size: "w342"),
+        description: @movie["overview"],
+        vote_average: @movie["vote_average"],
+        vote_count: @movie["vote_count"],
+        release_date: @movie["release_date"].present? ? Date.parse(@movie["release_date"]) : nil,
+        runtime: @movie["runtime"],
+        genres: @movie["genres"]&.map { |g| g["name"] }&.to_json,
+        director: director_name(@movie),
+        cast: @movie["cast"]&.to_json
+      ) %>
+      <% movie_record.save! %>
+    <% else %>
+      <% if movie_record.poster_url.blank? && @movie["poster_path"].present? %>
+        <% movie_record.update(poster_url: poster_url(@movie["poster_path"], size: "w342")) %>
+      <% end %>
+    <% end %>
+    
     <% favorite = nil %>
     <% if logged_in? %>
-      <% movie_record = Movie.find_or_initialize_by(tmdb_id: @movie["id"]) %>
-      <% if movie_record.new_record? %>
-        <% movie_record.assign_attributes(
-          title: @movie["title"],
-          poster_url: poster_url(@movie["poster_path"], size: "w342"),
-          description: @movie["overview"],
-          vote_average: @movie["vote_average"],
-          vote_count: @movie["vote_count"],
-          release_date: @movie["release_date"].present? ? Date.parse(@movie["release_date"]) : nil,
-          runtime: @movie["runtime"],
-          genres: @movie["genres"]&.map { |g| g["name"] }&.to_json,
-          director: director_name(@movie),
-          cast: @movie["cast"]&.to_json
-        ) %>
-        <% movie_record.save! %>
-      <% else %>
-        <% if movie_record.poster_url.blank? && @movie["poster_path"].present? %>
-          <% movie_record.update(poster_url: poster_url(@movie["poster_path"], size: "w342")) %>
-        <% end %>
-      <% end %>
       <% favorite = current_user.favorites.find_by(movie: movie_record) %>
       <% watchlist_entry = current_user.watchlists.find_by(movie: movie_record) %>
     <% end %>
@@ -80,6 +80,161 @@
         <% end %>
       </div>
     </div>
+
+    <!-- Reviews Section -->
+    <% if movie_record.present? %>
+      <% all_ratings = movie_record.ratings.includes(:user).where("review IS NOT NULL AND review != ''") %>
+      <% if all_ratings.any? %>
+        <div class="rounded-2xl border border-neutral-100 bg-white p-4 shadow-sm">
+          <h3 class="text-lg font-semibold text-slate-900 mb-4">Community Reviews</h3>
+          
+          <!-- Review Cards -->
+          <div class="space-y-4">
+            <% all_ratings.each do |user_rating| %>
+              <!-- Individual Review Card -->
+              <div class="border border-neutral-200 rounded-lg p-4 bg-neutral-50/50">
+                <div class="flex gap-3">
+                  <!-- User Avatar -->
+                  <div class="flex-shrink-0">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-semibold">
+                      <%= user_rating.user.email[0].upcase %>
+                    </div>
+                  </div>
+                  
+                  <!-- Review Content -->
+                  <div class="flex-1 min-w-0">
+                    <!-- Header -->
+                    <div class="flex items-center justify-between mb-2">
+                      <div>
+                        <div class="flex items-center gap-2">
+                          <span class="font-medium text-slate-900"><%= user_rating.user.email.split('@').first.capitalize %></span>
+                          <!-- Star Rating Display -->
+                          <div class="flex items-center gap-1">
+                            <% (1..5).each do |star| %>
+                              <% full_value = star * 2 %>
+                              <% half_value = star * 2 - 1 %>
+                              <% rating_value = user_rating.value || 0 %>
+                              <% if rating_value >= full_value %>
+                                <svg class="h-4 w-4 fill-yellow-400 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                  <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+                                </svg>
+                              <% elsif rating_value == half_value %>
+                                <div class="relative h-4 w-4">
+                                  <svg class="absolute h-4 w-4 fill-gray-300 text-gray-300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                    <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+                                  </svg>
+                                  <svg class="absolute h-4 w-4 fill-yellow-400 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" style="clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);">
+                                    <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+                                  </svg>
+                                </div>
+                              <% else %>
+                                <svg class="h-4 w-4 fill-gray-300 text-gray-300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                  <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+                                </svg>
+                              <% end %>
+                            <% end %>
+                          </div>
+                          <% if user_rating.contains_spoilers %>
+                            <button type="button" onclick="toggleSpoiler(<%= user_rating.id %>); return false;" style="background-color: #f59e0b; color: white; padding: 0.25rem 0.5rem; font-size: 0.75rem; font-weight: 600; border-radius: 0.375rem; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); transition: background-color 150ms ease;" onmouseover="this.style.backgroundColor = '#d97706'" onmouseout="this.style.backgroundColor = '#f59e0b'" onmousedown="this.style.backgroundColor = '#b45309'" onmouseup="this.style.backgroundColor = '#d97706'">
+                              <span>⚠️</span>
+                              <span>Spoiler - Click to reveal</span>
+                            </button>
+                          <% end %>
+                        </div>
+                        <div class="text-xs text-slate-500 mt-0.5">
+                          <span><%= time_ago_in_words(user_rating.created_at) %> ago</span>
+                          <% if user_rating.updated_at > user_rating.created_at + 1.minute %>
+                            <span> • </span>
+                            <span class="italic">Edited</span>
+                          <% end %>
+                        </div>
+                      </div>
+                      
+                      <!-- Actions (Only for current user) -->
+                      <% if logged_in? && user_rating.user == current_user %>
+                        <div class="flex gap-2">
+                          <button onclick="toggleEditReview(event, <%= user_rating.id %>); return false;" class="px-3 py-1.5 text-sm font-medium text-slate-700 bg-white border border-gray-300 rounded hover:bg-gray-50">
+                            Edit
+                          </button>
+                          <%= button_to "Delete", rating_path(user_rating), method: :delete, 
+                              data: { turbo_confirm: "Are you sure you want to delete this review?" }, 
+                              class: "px-3 py-1.5 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded" %>
+                        </div>
+                      <% end %>
+                    </div>
+                    
+                    <!-- Review Text -->
+<div id="review-text-<%= user_rating.id %>" class="text-slate-700 leading-relaxed whitespace-pre-wrap mt-2 <%= user_rating.contains_spoilers ? 'hidden' : '' %>"><%= user_rating.review %></div>
+                    
+                    <!-- Spoiler Placeholder -->
+                    <% if user_rating.contains_spoilers %>
+<div id="spoiler-placeholder-<%= user_rating.id %>" class="text-slate-700 leading-relaxed whitespace-pre-wrap mt-2" style="filter: blur(4px); opacity: 0.5; pointer-events: none; user-select: none;"><%= user_rating.review %></div>
+                    <% end %>
+                    
+                    <!-- Emoji Reactions Section -->
+                    <%= render "review_reactions/emoji_reactions", user_rating: user_rating, current_user: current_user %>
+                    
+                    <!-- Edit Form (Hidden) - Only for current user -->
+                    <% if logged_in? && user_rating.user == current_user %>
+                      <div id="edit-review-form-<%= user_rating.id %>" class="hidden mt-3 pt-3 border-t border-neutral-100">
+                      <%= form_with(model: user_rating, local: true, method: :patch, class: "space-y-3") do |f| %>
+                        <%= f.text_area :review, 
+                            rows: 5, 
+                            placeholder: "Share your thoughts about this movie...", 
+                            class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm resize-none" %>
+                        
+                        <div class="flex items-center justify-between">
+                          <label class="flex items-center gap-2 cursor-pointer">
+                            <%= f.check_box :contains_spoilers, class: "h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" %>
+                            <span class="text-sm text-slate-700">Contains Spoilers</span>
+                          </label>
+                          
+                          <div class="flex gap-2">
+                            <button type="button" onclick="toggleEditReview(event, <%= user_rating.id %>)" class="px-3 py-1.5 text-sm text-slate-600 hover:text-slate-700 border border-gray-300 rounded hover:bg-gray-50">
+                              Cancel
+                            </button>
+                            <%= f.submit "Save", class: "px-3 py-1.5 text-sm bg-indigo-600 hover:bg-indigo-700 text-white rounded shadow-sm" %>
+                          </div>
+                        </div>
+                      <% end %>
+                    </div>
+                    <% end %>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    <% end %>
+
+    <script>
+      function toggleEditReview(event, reviewId) {
+        event.preventDefault();
+        const reviewText = document.getElementById(`review-text-${reviewId}`);
+        const spoilerPlaceholder = document.getElementById(`spoiler-placeholder-${reviewId}`);
+        const editForm = document.getElementById(`edit-review-form-${reviewId}`);
+        
+        if (reviewText && editForm) {
+          reviewText.classList.toggle('hidden');
+          editForm.classList.toggle('hidden');
+        }
+        
+        if (spoilerPlaceholder) {
+          spoilerPlaceholder.classList.toggle('hidden');
+        }
+      }
+      
+      function toggleSpoiler(reviewId) {
+        const reviewText = document.getElementById(`review-text-${reviewId}`);
+        const placeholder = document.getElementById(`spoiler-placeholder-${reviewId}`);
+        
+        if (reviewText && placeholder) {
+          reviewText.classList.toggle('hidden');
+          placeholder.classList.toggle('hidden');
+        }
+      }
+    </script>
 
     <div class="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
       <% if logged_in? && movie_record.present? %>

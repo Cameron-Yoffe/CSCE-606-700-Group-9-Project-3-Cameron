@@ -40,6 +40,13 @@ class RatingsController < ApplicationController
     end
   end
 
+  def destroy
+    @rating = current_user.ratings.find(params[:id])
+    @movie = @rating.movie
+    @rating.destroy
+    redirect_to movie_path(@movie.tmdb_id), notice: "Review deleted successfully."
+  end
+
   private
 
   def set_movie
@@ -61,7 +68,7 @@ class RatingsController < ApplicationController
   end
 
   def rating_params
-    params.require(:rating).permit(:value, :review, :movie_id)
+    params.require(:rating).permit(:value, :review, :contains_spoilers, :movie_id)
   end
 
   def require_login
