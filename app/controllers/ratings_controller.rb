@@ -8,8 +8,7 @@ class RatingsController < ApplicationController
     @rating.movie_id = @movie.id
 
     if @rating.save
-      # Automatically add to watchlist as "watched" if not already in library
-      add_to_library(@movie)
+      remove_from_watchlist(@movie)
 
       respond_to do |format|
         format.json { render json: { success: true, rating: @rating }, status: :created }
@@ -25,8 +24,7 @@ class RatingsController < ApplicationController
 
   def update
     if @rating.update(rating_params)
-      # Automatically add to watchlist as "watched" if not already in library
-      add_to_library(@movie)
+      remove_from_watchlist(@movie)
 
       respond_to do |format|
         format.json { render json: { success: true, rating: @rating } }
@@ -75,10 +73,7 @@ class RatingsController < ApplicationController
     redirect_to sign_in_path unless logged_in?
   end
 
-  def add_to_library(movie)
-    # Only add if not already in user's watchlist
-    unless current_user.watchlists.exists?(movie_id: movie.id)
-      current_user.watchlists.create(movie_id: movie.id, status: "watched")
-    end
+  def remove_from_watchlist(movie)
+    current_user.watchlists.where(movie_id: movie.id).destroy_all
   end
 end

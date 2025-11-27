@@ -2,12 +2,13 @@
   <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
     <h1 class="text-4xl font-bold">Welcome, <%= @user.first_name || @user.username %>!</h1>
     <div class="flex gap-3">
+      <%= link_to "Search Movies", movies_path, class: "bg-brand-600 hover:bg-brand-700 text-white font-bold py-2 px-4 rounded-md shadow" %>
       <%= link_to "View Profile", profile_path, class: "bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-md shadow" %>
       <%= button_to "Sign Out", logout_path, method: :delete, class: "bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md" %>
     </div>
   </div>
   <section class="mt-8">
-    <h2 class="text-2xl font-semibold">My Library</h2>
+    <h2 class="text-2xl font-semibold">Watchlist</h2>
     <% watchlists = @user.watchlists.includes(:movie) %>
     <% if watchlists.any? %>
       <%= turbo_frame_tag "library-list" do %>
@@ -27,13 +28,6 @@
                 <!-- Movie Info -->
                 <div class="p-3 space-y-2">
                   <h3 class="font-semibold text-sm line-clamp-2 text-slate-900"><%= m.title %></h3>
-                  <p class="text-xs text-slate-600">Status: <%= wl.status.humanize %></p>
-
-                  <!-- Star Rating -->
-                  <div class="pt-1">
-                    <%= render "ratings/star_rating", movie: m, show_form: false %>
-                  </div>
-
                   <!-- Tags -->
                   <% if m.tags.any? %>
                     <div class="flex flex-wrap gap-1 pt-2">
@@ -51,7 +45,7 @@
         </div>
       <% end %>
     <% else %>
-      <p class="mt-2 text-slate-600">Your library is empty. Add movies from the search results.</p>
+      <p class="mt-2 text-slate-600">Your watchlist is empty. Add movies from the search results.</p>
     <% end %>
   </section>
 </div>

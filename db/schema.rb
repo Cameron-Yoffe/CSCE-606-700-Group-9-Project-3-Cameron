@@ -53,7 +53,9 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_27_071643) do
     t.datetime "created_at", null: false
     t.text "description"
     t.string "director"
+    t.json "embedding", default: {}, null: false
     t.text "genres", default: "[]"
+    t.json "movie_embedding", default: {}, null: false
     t.string "poster_url"
     t.date "release_date"
     t.integer "runtime"
@@ -62,6 +64,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_27_071643) do
     t.datetime "updated_at", null: false
     t.float "vote_average"
     t.integer "vote_count"
+    t.index ["embedding"], name: "index_movies_on_embedding"
     t.index ["release_date"], name: "index_movies_on_release_date"
     t.index ["title"], name: "index_movies_on_title"
     t.index ["tmdb_id"], name: "index_movies_on_tmdb_id", unique: true
@@ -107,6 +110,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_27_071643) do
     t.text "bio"
     t.datetime "created_at", null: false
     t.string "email", null: false
+    t.json "embedding", default: {}, null: false
     t.string "first_name"
     t.string "last_name"
     t.string "password_digest", null: false
@@ -114,8 +118,10 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_27_071643) do
     t.string "provider"
     t.string "uid"
     t.datetime "updated_at", null: false
+    t.json "user_embedding", default: {}, null: false
     t.string "username", null: false
     t.index ["email"], name: "index_users_on_email", unique: true
+    t.index ["embedding"], name: "index_users_on_embedding"
     t.index ["provider"], name: "index_users_on_provider"
     t.index ["uid"], name: "index_users_on_uid"
     t.index ["username"], name: "index_users_on_username", unique: true
