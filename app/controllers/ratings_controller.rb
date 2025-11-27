@@ -16,7 +16,7 @@ class RatingsController < ApplicationController
       end
     else
       respond_to do |format|
-        format.json { render json: { success: false, errors: @rating.errors.full_messages }, status: :unprocessable_entity }
+        format.json { render json: { success: false, errors: @rating.errors.full_messages }, status: :unprocessable_content }
         format.html { redirect_to movie_path(@movie.tmdb_id), alert: "Error saving rating." }
       end
     end
@@ -32,7 +32,7 @@ class RatingsController < ApplicationController
       end
     else
       respond_to do |format|
-        format.json { render json: { success: false, errors: @rating.errors.full_messages }, status: :unprocessable_entity }
+        format.json { render json: { success: false, errors: @rating.errors.full_messages }, status: :unprocessable_content }
         format.html { redirect_to movie_path(@movie.tmdb_id), alert: "Error updating rating." }
       end
     end

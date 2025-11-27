@@ -31,7 +31,7 @@ class DiaryEntriesController < ApplicationController
       redirect_to diary_entries_path, notice: "Diary entry created successfully"
     else
       @movie = movie
-      render :new, status: :unprocessable_entity
+      render :new, status: :unprocessable_content
     end
   end
 
@@ -44,7 +44,7 @@ class DiaryEntriesController < ApplicationController
       redirect_to diary_entries_path, notice: "Diary entry updated successfully"
     else
       @movie = @diary_entry.movie
-      render :edit, status: :unprocessable_entity
+      render :edit, status: :unprocessable_content
     end
   end
 

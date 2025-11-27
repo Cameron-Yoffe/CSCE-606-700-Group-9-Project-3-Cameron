@@ -39,8 +39,7 @@ RSpec.describe "DiaryEntries", type: :request do
 
         get diary_entries_path
         expect(response).to be_successful
-        # Recent entry should appear before old entry in the response
-        expect(response.body.index(recent_entry.movie.title)).to be < response.body.index(old_entry.movie.title)
+        expect(response.body).to match(/#{recent_entry.movie.title}.*#{old_entry.movie.title}/m)
       end
 
       it "shows empty state when no entries exist" do
@@ -133,7 +132,7 @@ RSpec.describe "DiaryEntries", type: :request do
             watched_date: Date.today
           }
         }
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
         expect(response.body).to include("Log Movie")
       end
 
@@ -160,7 +159,7 @@ RSpec.describe "DiaryEntries", type: :request do
           }
         }.not_to change { user.diary_entries.count }
 
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
       end
 
       it "allows optional fields to be blank" do
@@ -276,7 +275,7 @@ RSpec.describe "DiaryEntries", type: :request do
         patch diary_entry_path(entry), params: {
           diary_entry: { content: "" }
         }
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
         expect(response.body).to include("Edit Diary Entry")
       end
     end

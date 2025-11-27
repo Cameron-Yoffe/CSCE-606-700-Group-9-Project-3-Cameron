@@ -27,6 +27,11 @@ FactoryBot.define do
     director { Faker::Name.name }
   end
 
+  factory :tag do
+    name { Faker::Lorem.unique.word }
+    category { Tag::MAIN_CATEGORIES.sample }
+  end
+
   factory :watchlist do
     user { association :user }
     movie { association :movie }
