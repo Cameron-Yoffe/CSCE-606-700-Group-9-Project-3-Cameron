@@ -7,7 +7,7 @@
     </div>
   </div>
   <section class="mt-8">
-    <h2 class="text-2xl font-semibold">My Library</h2>
+    <h2 class="text-2xl font-semibold">Watchlist</h2>
     <% watchlists = @user.watchlists.includes(:movie) %>
     <% if watchlists.any? %>
       <%= turbo_frame_tag "library-list" do %>
@@ -29,11 +29,6 @@
                   <h3 class="font-semibold text-sm line-clamp-2 text-slate-900"><%= m.title %></h3>
                   <p class="text-xs text-slate-600">Status: <%= wl.status.humanize %></p>
 
-                  <!-- Star Rating -->
-                  <div class="pt-1">
-                    <%= render "ratings/star_rating", movie: m, show_form: false %>
-                  </div>
-
                   <!-- Tags -->
                   <% if m.tags.any? %>
                     <div class="flex flex-wrap gap-1 pt-2">
@@ -51,7 +46,7 @@
         </div>
       <% end %>
     <% else %>
-      <p class="mt-2 text-slate-600">Your library is empty. Add movies from the search results.</p>
+      <p class="mt-2 text-slate-600">Your watchlist is empty. Add movies from the search results.</p>
     <% end %>
   </section>
 </div>

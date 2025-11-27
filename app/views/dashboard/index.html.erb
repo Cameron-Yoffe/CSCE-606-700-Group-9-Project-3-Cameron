@@ -23,12 +23,12 @@
       </div>
     </div>
 
-    <!-- My Library Section -->
+    <!-- Watchlist Section -->
     <section class="rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 p-8">
       <div class="flex items-center justify-between mb-6">
         <div>
-          <h2 class="text-3xl font-black text-white mb-2">My Library</h2>
-          <p class="text-slate-400">Your personal movie collection</p>
+          <h2 class="text-3xl font-black text-white mb-2">Watchlist</h2>
+          <p class="text-slate-400">Movies you want to check out soon</p>
         </div>
         <%= link_to movies_path, class: "inline-flex items-center px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200" do %>
           Search Movies
@@ -61,9 +61,7 @@
                     <h3 class="font-bold text-lg text-white line-clamp-2 group-hover:text-amber-400 transition-colors">
                       <%= m.title %>
                     </h3>
-                    <div class="flex items-center gap-2">
-                      <%= render "ratings/star_rating", movie: m, show_form: false %>
-                    </div>
+                    <p class="text-sm text-slate-400">Add to your queue and watch later.</p>
                     <%= link_to movie_path(m.tmdb_id), class: "block w-full text-center px-4 py-2 bg-slate-600 hover:bg-slate-500 text-white font-semibold rounded-lg transition-all mt-3" do %>
                       View Details
                     <% end %>
@@ -80,9 +78,9 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
             </svg>
           </div>
-          <h3 class="text-2xl font-bold text-white mb-3">Your library is empty</h3>
+          <h3 class="text-2xl font-bold text-white mb-3">Your watchlist is empty</h3>
           <p class="text-slate-400 mb-8 max-w-md mx-auto text-lg">
-            Start your movie journey by searching and adding films to your collection!
+            Start your movie journey by searching and adding films you want to watch!
           </p>
           <%= link_to movies_path, class: "inline-flex items-center px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200" do %>
             Add Your First Movie
