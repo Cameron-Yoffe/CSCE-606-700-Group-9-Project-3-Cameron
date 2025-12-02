@@ -105,7 +105,7 @@ class LetterboxdDiaryImporter
     return "#{base_message}." if uri.blank? && note.blank?
     return "#{base_message}: #{note}." if uri.blank?
 
-    ["#{base_message} (#{uri})", note.presence].compact.join(". ")
+    [ "#{base_message} (#{uri})", note.presence ].compact.join(". ")
   end
 
   def parsed_rating(value)
