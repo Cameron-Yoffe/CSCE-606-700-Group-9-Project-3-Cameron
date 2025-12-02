@@ -27,6 +27,11 @@ FactoryBot.define do
     director { Faker::Name.name }
   end
 
+  factory :tag do
+    name { Faker::Lorem.unique.word }
+    category { Tag::MAIN_CATEGORIES.sample }
+  end
+
   factory :watchlist do
     user { association :user }
     movie { association :movie }
@@ -52,5 +57,11 @@ FactoryBot.define do
     watched_date { Faker::Date.between(from: 1.year.ago, to: Date.today) }
     mood { [ 'happy', 'sad', 'excited', 'thoughtful', 'entertained' ].sample }
     rating { Faker::Number.between(from: 0, to: 10) }
+  end
+
+  factory :review_reaction do
+    user { association :user }
+    rating { association :rating }
+    emoji { ReviewReaction::ALLOWED_EMOJIS.first }
   end
 end
