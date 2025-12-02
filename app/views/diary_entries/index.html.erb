@@ -18,7 +18,12 @@
               </div>
             <% end %>
             <div class="p-4">
-              <h2 class="text-lg font-semibold text-slate-900 truncate"><%= entry.movie.title %></h2>
+              <div class="flex items-center gap-2">
+                <h2 class="text-lg font-semibold text-slate-900 truncate"><%= entry.movie.title %></h2>
+                <% if entry.rewatch? %>
+                  <span class="badge">Rewatch</span>
+                <% end %>
+              </div>
               <p class="text-sm text-slate-500 mt-1">Viewed on <%= entry.watched_date.strftime("%B %d, %Y") %></p>
               <% if entry.content.present? %>
                 <p class="text-sm text-slate-600 mt-3 line-clamp-2"><%= entry.content %></p>

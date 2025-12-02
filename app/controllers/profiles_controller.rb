@@ -19,6 +19,19 @@ class ProfilesController < ApplicationController
     @genre_chart_data = build_genre_chart_data
   end
 
+  def import_letterboxd
+    upload = params[:letterboxd_file]
+
+    unless upload.respond_to?(:read) && upload.respond_to?(:size) && upload.size.to_i.positive?
+      return redirect_to profile_path, alert: "Please attach your Letterboxd CSV export before importing."
+    end
+
+    file_content = upload.read
+    LetterboxdImportJob.perform_later(current_user.id, file_content)
+
+    redirect_to profile_path, notice: "Import started. Your diary will update shortly once processing finishes."
+  end
+
   private
 
   def require_login

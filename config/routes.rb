@@ -24,6 +24,7 @@ Rails.application.routes.draw do
   resources :users, only: [ :create ]
   get "dashboard", to: "dashboards#show"
   get "profile", to: "profiles#show"
+  post "profile/import_letterboxd", to: "profiles#import_letterboxd", as: :profile_import_letterboxd
 
   # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
   # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest

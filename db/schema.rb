@@ -10,17 +10,19 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_11_27_071643) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_02_075743) do
   create_table "diary_entries", force: :cascade do |t|
     t.text "content", null: false
     t.datetime "created_at", null: false
     t.string "mood"
     t.integer "movie_id", null: false
     t.integer "rating", default: 0
+    t.boolean "rewatch", default: false, null: false
     t.datetime "updated_at", null: false
     t.integer "user_id", null: false
     t.date "watched_date"
     t.index ["movie_id"], name: "index_diary_entries_on_movie_id"
+    t.index ["rewatch"], name: "index_diary_entries_on_rewatch"
     t.index ["user_id", "movie_id"], name: "index_diary_entries_on_user_id_and_movie_id"
     t.index ["user_id", "watched_date"], name: "index_diary_entries_on_user_id_and_watched_date"
     t.index ["user_id"], name: "index_diary_entries_on_user_id"
