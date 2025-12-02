@@ -20,6 +20,7 @@ class User < ApplicationRecord
   validates :first_name, length: { maximum: 50 }, allow_blank: true
   validates :last_name, length: { maximum: 50 }, allow_blank: true
   validates :bio, length: { maximum: 500 }, allow_blank: true
+  validates :top_5_movies, length: { maximum: 1000 }, allow_blank: true
 
   # Custom password strength validation
   validate :password_strength, if: -> { password.present? && new_record? }

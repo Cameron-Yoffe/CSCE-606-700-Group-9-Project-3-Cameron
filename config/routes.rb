@@ -24,6 +24,8 @@ Rails.application.routes.draw do
   resources :users, only: [ :create ]
   get "dashboard", to: "dashboards#show"
   get "profile", to: "profiles#show"
+  get "profile/edit", to: "profiles#edit"
+  patch "profile", to: "profiles#update"
 
   # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
   # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
