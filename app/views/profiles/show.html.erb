@@ -40,6 +40,24 @@
       </div>
     </section>
 
+    <section class="card space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-xl font-semibold text-slate-900">Import diary from Letterboxd</h2>
+          <p class="text-slate-600 text-sm">Upload your Letterboxd diary CSV export to backfill your diary entries.</p>
+        </div>
+        <span class="badge">Beta</span>
+      </div>
+
+      <%= form_with url: profile_import_letterboxd_path, method: :post, multipart: true, local: true, class: "space-y-4" do |form| %>
+        <div class="flex flex-col gap-3 md:flex-row md:items-center">
+          <%= form.file_field :letterboxd_file, accept: ".csv", class: "flex-1 rounded-lg border border-neutral-200 bg-neutral-25 px-4 py-2 text-sm text-slate-700 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100" %>
+          <%= form.submit "Import from Letterboxd", class: "btn btn-primary" %>
+        </div>
+        <p class="text-xs text-slate-600">We will skip any movies you've already logged on the same date and mark repeat watches as rewatches.</p>
+      <% end %>
+    </section>
+
     <section class="grid gap-6 md:grid-cols-2">
       <div class="card space-y-4">
         <div class="flex items-center justify-between">

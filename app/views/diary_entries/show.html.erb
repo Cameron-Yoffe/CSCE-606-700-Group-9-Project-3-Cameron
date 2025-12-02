@@ -11,7 +11,12 @@
       
       <div class="p-8">
         <h1 class="font-display text-3xl font-semibold text-slate-900"><%= @diary_entry.movie.title %></h1>
-        <p class="text-slate-600 mt-2">Viewed on <%= @diary_entry.watched_date.strftime("%B %d, %Y") %></p>
+        <div class="flex items-center gap-3 mt-2">
+          <p class="text-slate-600">Viewed on <%= @diary_entry.watched_date.strftime("%B %d, %Y") %></p>
+          <% if @diary_entry.rewatch? %>
+            <span class="badge">Rewatch</span>
+          <% end %>
+        </div>
 
         <% if @diary_entry.rating.present? && @diary_entry.rating > 0 %>
           <div class="mt-4">

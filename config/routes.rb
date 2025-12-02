@@ -24,6 +24,7 @@ Rails.application.routes.draw do
   resources :users, only: [ :create ]
   get "dashboard", to: "dashboards#show"
   get "profile", to: "profiles#show"
+  post "profile/import_letterboxd", to: "profiles#import_letterboxd", as: :profile_import_letterboxd
   get "profile/edit", to: "profiles#edit"
   patch "profile", to: "profiles#update"
 
