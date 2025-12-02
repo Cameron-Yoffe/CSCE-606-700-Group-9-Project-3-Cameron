@@ -118,6 +118,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_02_075743) do
     t.string "password_digest", null: false
     t.string "profile_image_url"
     t.string "provider"
+    t.text "top_5_movies"
     t.string "uid"
     t.datetime "updated_at", null: false
     t.json "user_embedding", default: {}, null: false

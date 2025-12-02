@@ -38,6 +38,10 @@ class ProfilesController < ApplicationController
     redirect_to sign_up_path, alert: "You must be logged in" unless logged_in?
   end
 
+  def user_params
+    params.require(:user).permit(:first_name, :last_name, :bio, :profile_image_url, :top_5_movies)
+  end
+
   def yearly_diary_entries
     @yearly_diary_entries ||= @diary_entries.where(watched_date: Date.current.beginning_of_year..Date.current.end_of_year)
   end
