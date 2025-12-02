@@ -23,7 +23,10 @@ RSpec.describe "DiaryEntries", type: :request do
         sign_in(user)
         entry1 = create(:diary_entry, user: user)
         entry2 = create(:diary_entry, user: user)
-        other_user_entry = create(:diary_entry)
+        other_user_entry = create(
+          :diary_entry,
+          movie: create(:movie, title: "Hidden Gem")
+        )
 
         get diary_entries_path
         expect(response).to be_successful

@@ -58,4 +58,10 @@ FactoryBot.define do
     mood { [ 'happy', 'sad', 'excited', 'thoughtful', 'entertained' ].sample }
     rating { Faker::Number.between(from: 0, to: 10) }
   end
+
+  factory :review_reaction do
+    user { association :user }
+    rating { association :rating }
+    emoji { ReviewReaction::ALLOWED_EMOJIS.first }
+  end
 end
