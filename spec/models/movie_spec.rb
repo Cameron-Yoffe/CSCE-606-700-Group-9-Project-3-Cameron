@@ -23,18 +23,18 @@ RSpec.describe Movie, type: :model do
 
   describe '#genre_names' do
     it 'parses JSON genre array' do
-      movie = build(:movie, genres: [{ name: 'Comedy' }, { name: 'Drama' }].to_json)
+      movie = build(:movie, genres: [ { name: 'Comedy' }, { name: 'Drama' } ].to_json)
       expect(movie.genre_names).to eq(%w[Comedy Drama])
     end
 
     it 'parses comma-separated strings' do
       movie = build(:movie, genres: 'Action, Thriller ,Sci-Fi')
-      expect(movie.genre_names).to eq(['Action', 'Thriller', 'Sci-Fi'])
+      expect(movie.genre_names).to eq([ 'Action', 'Thriller', 'Sci-Fi' ])
     end
 
     it 'ignores blank genres' do
       movie = build(:movie, genres: '["Horror", null, ""]')
-      expect(movie.genre_names).to eq(['Horror'])
+      expect(movie.genre_names).to eq([ 'Horror' ])
     end
 
     it 'handles unexpected hash keys gracefully' do

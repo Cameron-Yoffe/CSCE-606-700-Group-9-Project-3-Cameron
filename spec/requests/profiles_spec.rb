@@ -19,8 +19,8 @@ RSpec.describe "Profiles", type: :request do
 
     it "renders stats for the current user" do
       sign_in
-      drama = create(:movie, genres: [{ name: "Drama" }], director: "Director A")
-      comedy = create(:movie, genres: [{ name: "Comedy" }, { name: "Drama" }], director: "Director B")
+      drama = create(:movie, genres: [ { name: "Drama" } ], director: "Director A")
+      comedy = create(:movie, genres: [ { name: "Comedy" }, { name: "Drama" } ], director: "Director B")
 
       create(:diary_entry, user: user, movie: drama, watched_date: Date.current.beginning_of_year)
       create(:diary_entry, user: user, movie: comedy, watched_date: Date.current.beginning_of_year + 1.month, rating: 8)
