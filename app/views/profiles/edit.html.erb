@@ -1,0 +1,42 @@
+<main class="min-h-screen bg-neutral-25 px-6 py-12">
+  <div class="mx-auto max-w-2xl">
+    <div class="card space-y-6">
+      <div class="flex items-center gap-4">
+        <h1 class="font-display text-2xl font-semibold text-slate-900">Edit Profile</h1>
+      </div>
+
+      <%= form_with model: @user, url: profile_path, method: :patch, class: "space-y-6" do |f| %>
+        <div class="grid gap-4 md:grid-cols-2">
+          <div>
+            <%= f.label :first_name, class: "block text-sm font-medium text-slate-700" %>
+            <%= f.text_field :first_name, class: "mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-brand-500 focus:ring-brand-500" %>
+          </div>
+          <div>
+            <%= f.label :last_name, class: "block text-sm font-medium text-slate-700" %>
+            <%= f.text_field :last_name, class: "mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-brand-500 focus:ring-brand-500" %>
+          </div>
+        </div>
+
+        <div>
+          <%= f.label :bio, class: "block text-sm font-medium text-slate-700" %>
+          <%= f.text_area :bio, rows: 4, class: "mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-brand-500 focus:ring-brand-500" %>
+        </div>
+
+        <div>
+          <%= f.label :profile_image_url, class: "block text-sm font-medium text-slate-700" %>
+          <%= f.text_field :profile_image_url, class: "mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-brand-500 focus:ring-brand-500" %>
+        </div>
+
+        <div>
+          <%= f.label :top_5_movies, class: "block text-sm font-medium text-slate-700" %>
+          <%= f.text_area :top_5_movies, rows: 5, class: "mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-brand-500 focus:ring-brand-500", placeholder: "Enter your top 5 favorite movies, one per line" %>
+        </div>
+
+        <div class="flex justify-end gap-3">
+          <%= link_to "Cancel", profile_path, class: "btn btn-secondary" %>
+          <%= f.submit "Update Profile", class: "btn btn-primary" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</main>

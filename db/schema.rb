@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_11_27_071643) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_02_071952) do
   create_table "diary_entries", force: :cascade do |t|
     t.text "content", null: false
     t.datetime "created_at", null: false
@@ -116,6 +116,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_27_071643) do
     t.string "password_digest", null: false
     t.string "profile_image_url"
     t.string "provider"
+    t.text "top_5_movies"
     t.string "uid"
     t.datetime "updated_at", null: false
     t.json "user_embedding", default: {}, null: false
