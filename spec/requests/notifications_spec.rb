@@ -116,4 +116,40 @@ RSpec.describe "Notifications", type: :request do
       expect(JSON.parse(response.body)["count"]).to eq(unread_count)
     end
   end
+
+  describe "DELETE /notifications/destroy_all" do
+    before { sign_in(user) }
+
+    let!(:notification1) { create(:notification, user: user, notifiable: follow) }
+    let!(:notification2) { create(:notification, user: user, notifiable: follow) }
+    let!(:other_notification) { create(:notification, user: other_user, notifiable: follow) }
+
+    it "deletes all current user's notifications" do
+      expect {
+        delete "/notifications/destroy_all"
+      }.to change { user.notifications.count }.to(0)
+    end
+
+    it "does not delete other users' notifications" do
+      expect {
+        delete "/notifications/destroy_all"
+      }.not_to change { other_user.notifications.count }
+    end
+
+    it "redirects to notifications with a success message" do
+      delete "/notifications/destroy_all"
+      expect(response).to redirect_to(notifications_path)
+      follow_redirect!
+      expect(response.body).to include("All notifications deleted")
+    end
+
+    context "with JSON format" do
+      it "returns success JSON" do
+        delete "/notifications/destroy_all", headers: { "Accept" => "application/json" }
+        expect(response).to have_http_status(:ok)
+        body = JSON.parse(response.body)
+        expect(body["message"]).to eq("All notifications deleted")
+      end
+    end
+  end
 end

@@ -37,5 +37,60 @@ RSpec.describe "Profiles", type: :request do
       expect(response.body).to include("Drama")
       expect(response.body).to include("Director A")
     end
+
+    it "shows import sections on own profile" do
+      sign_in
+      get profile_path
+
+      expect(response.body).to include("Import diary from Letterboxd")
+      expect(response.body).to include("Import ratings from Letterboxd")
+    end
+  end
+
+  describe "GET /users/:id (viewing other user's profile)" do
+    let(:other_user) { create(:user, username: "other_user", bio: "Another movie fan") }
+
+    before { sign_in }
+
+    it "shows the other user's profile" do
+      get user_profile_path(other_user)
+
+      expect(response).to be_successful
+      expect(response.body).to include(other_user.username)
+      expect(response.body).to include("Another movie fan")
+    end
+
+    it "does not show import sections on other user's profile" do
+      get user_profile_path(other_user)
+
+      expect(response.body).not_to include("Import diary from Letterboxd")
+      expect(response.body).not_to include("Import ratings from Letterboxd")
+    end
+
+    it "shows follow button on other user's profile" do
+      get user_profile_path(other_user)
+
+      expect(response.body).to include("Follow")
+    end
+
+    context "when viewing a private profile" do
+      let(:private_user) { create(:user, :private, username: "private_user") }
+
+      it "shows private account message when not following" do
+        get user_profile_path(private_user)
+
+        expect(response.body).to include("This Account is Private")
+      end
+
+      it "shows profile content when following" do
+        user.follow(private_user)
+        private_user.pending_follow_requests.first&.accept!
+
+        get user_profile_path(private_user)
+
+        expect(response.body).not_to include("This Account is Private")
+        expect(response.body).to include(private_user.username)
+      end
+    end
   end
 end

@@ -76,18 +76,49 @@
       </section>
 
       <!-- Activity Feed -->
-      <section class="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
-        <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
-          <svg class="w-5 h-5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2.5 2.5 0 00-2.5-2.5H15"></path>
-          </svg>
-          Activity Feed
-        </h2>
+      <section class="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm" data-controller="activity-feed">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-xl font-semibold flex items-center gap-2">
+            <svg class="w-5 h-5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2.5 2.5 0 00-2.5-2.5H15"></path>
+            </svg>
+            Activity Feed
+            <span data-activity-feed-target="badge" class="items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-500 rounded-full" style="display: none;"></span>
+          </h2>
+          <div class="flex items-center gap-3">
+            <button type="button"
+                    id="refresh-activity-feed"
+                    class="text-sm text-slate-500 hover:text-brand-600 flex items-center gap-1 transition"
+                    data-action="click->activity-feed#refresh"
+                    title="Refresh activity feed">
+              <svg data-activity-feed-target="refreshIcon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+              </svg>
+              Refresh
+            </button>
+            <% if @activity_feed.any? %>
+              <button type="button" 
+                      id="clear-all-activities" 
+                      class="text-sm text-slate-500 hover:text-slate-700 flex items-center gap-1 transition"
+                      data-action="click->activity-feed#clearAll">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                Mark all as read
+              </button>
+            <% end %>
+          </div>
+        </div>
 
         <% if @activity_feed.any? %>
-          <div class="space-y-4">
+          <div class="space-y-4" id="activity-feed-list">
             <% @activity_feed.each do |activity| %>
-              <div class="flex gap-4 p-4 rounded-lg bg-neutral-50 hover:bg-neutral-100 transition">
+              <% activity_id = "#{activity.class.name.downcase}-#{activity.id}" %>
+              <% activity_timestamp = activity.created_at.to_i * 1000 %>
+              <div class="activity-card flex gap-4 p-4 rounded-lg bg-neutral-50 hover:bg-neutral-100 transition cursor-pointer relative"
+                   data-activity-id="<%= activity_id %>"
+                   data-activity-timestamp="<%= activity_timestamp %>"
+                   data-action="click->activity-feed#markAsRead">
                 <!-- User Avatar -->
                 <div class="flex-shrink-0">
                   <div class="w-10 h-10 rounded-full bg-brand-100 flex items-center justify-center">
@@ -102,31 +133,63 @@
                       <%= link_to activity.user.username, user_profile_path(activity.user), class: "font-medium text-slate-900 hover:text-brand-600" %>
                       <% if activity.is_a?(DiaryEntry) %>
                         <span class="text-slate-600">logged</span>
+                        <% if activity.movie %>
+                          <%= link_to activity.movie.title, movie_path(activity.movie.tmdb_id || activity.movie.id), class: "font-medium text-slate-900 hover:text-brand-600" %>
+                        <% end %>
+                      <% elsif activity.is_a?(ReviewReaction) %>
+                        <span class="text-slate-600">reacted</span>
+                        <span class="text-xl"><%= activity.emoji %></span>
+                        <span class="text-slate-600">to</span>
+                        <%= link_to activity.rating.user.username, user_profile_path(activity.rating.user), class: "font-medium text-slate-900 hover:text-brand-600" %><span class="text-slate-600">'s review of</span>
+                        <% if activity.rating.movie %>
+                          <%= link_to activity.rating.movie.title, movie_path(activity.rating.movie.tmdb_id || activity.rating.movie.id), class: "font-medium text-slate-900 hover:text-brand-600" %>
+                        <% end %>
                       <% else %>
                         <span class="text-slate-600">rated</span>
-                      <% end %>
-                      <% if activity.movie %>
-                        <%= link_to activity.movie.title, movie_path(activity.movie.tmdb_id || activity.movie.id), class: "font-medium text-slate-900 hover:text-brand-600" %>
+                        <% if activity.movie %>
+                          <%= link_to activity.movie.title, movie_path(activity.movie.tmdb_id || activity.movie.id), class: "font-medium text-slate-900 hover:text-brand-600" %>
+                        <% end %>
                       <% end %>
                     </div>
-                    <span class="text-xs text-slate-400"><%= time_ago_in_words(activity.created_at) %> ago</span>
+                    <div class="flex items-center gap-2">
+                      <span class="text-xs text-slate-400"><%= time_ago_in_words(activity.created_at) %> ago</span>
+                      <!-- Notification dot -->
+                      <span class="activity-dot w-2.5 h-2.5 bg-brand-500 rounded-full hidden" title="New activity"></span>
+                    </div>
                   </div>
 
                   <% if activity.is_a?(DiaryEntry) && activity.content.present? %>
                     <p class="mt-2 text-sm text-slate-600 line-clamp-2"><%= activity.content %></p>
                   <% end %>
 
+                  <% if activity.is_a?(ReviewReaction) && activity.rating.review.present? %>
+                    <p class="mt-2 text-sm text-slate-500 italic line-clamp-2">"<%= activity.rating.review %>"</p>
+                  <% end %>
+
                   <% if activity.is_a?(Rating) %>
                     <div class="mt-2 flex items-center gap-1">
-                      <% (activity.value / 2).times do %>
-                        <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                        </svg>
-                      <% end %>
-                      <% (5 - activity.value / 2).times do %>
-                        <svg class="w-4 h-4 text-slate-300" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                        </svg>
+                      <% rating_value = activity.value || 0 %>
+                      <% (1..5).each do |star| %>
+                        <% full_value = star * 2 %>
+                        <% half_value = star * 2 - 1 %>
+                        <% if rating_value >= full_value %>
+                          <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                          </svg>
+                        <% elsif rating_value == half_value %>
+                          <div class="relative w-4 h-4">
+                            <svg class="absolute w-4 h-4 text-slate-300" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                            </svg>
+                            <svg class="absolute w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20" style="clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);">
+                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                            </svg>
+                          </div>
+                        <% else %>
+                          <svg class="w-4 h-4 text-slate-300" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                          </svg>
+                        <% end %>
                       <% end %>
                       <span class="ml-1 text-sm text-slate-500"><%= activity.value %>/10</span>
                     </div>
@@ -137,13 +200,14 @@
                 </div>
 
                 <!-- Movie Poster Thumbnail -->
-                <% if activity.movie %>
+                <% activity_movie = activity.is_a?(ReviewReaction) ? activity.rating.movie : activity.movie %>
+                <% if activity_movie %>
                   <div class="flex-shrink-0">
-                    <%= link_to movie_path(activity.movie.tmdb_id || activity.movie.id) do %>
-                      <% poster = activity.movie.poster_image_url %>
+                    <%= link_to movie_path(activity_movie.tmdb_id || activity_movie.id) do %>
+                      <% poster = activity_movie.poster_image_url %>
                       <% if poster.present? %>
                         <img src="<%= poster %>" 
-                             alt="<%= activity.movie.title %>" 
+                             alt="<%= activity_movie.title %>" 
                              class="w-12 h-18 object-cover rounded-md shadow-sm"
                              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                         <div class="w-12 h-18 bg-slate-200 rounded-md shadow-sm items-center justify-center hidden">
@@ -184,7 +248,7 @@
         <div class="grid grid-cols-2 gap-4">
           <%= link_to user_followers_path(current_user), class: "text-center p-3 bg-neutral-50 rounded-lg hover:bg-brand-50 hover:ring-1 hover:ring-brand-200 transition" do %>
             <p class="text-2xl font-bold text-brand-600"><%= current_user.followers.count %></p>
-            <p class="text-sm text-slate-500">Followers</p>
+            <p class="text-sm text-slate-500"><%= "Follower".pluralize(current_user.followers.count) %></p>
           <% end %>
           <%= link_to user_following_path(current_user), class: "text-center p-3 bg-neutral-50 rounded-lg hover:bg-brand-50 hover:ring-1 hover:ring-brand-200 transition" do %>
             <p class="text-2xl font-bold text-brand-600"><%= current_user.following.count %></p>
@@ -192,11 +256,11 @@
           <% end %>
           <%= link_to favorites_path, class: "text-center p-3 bg-neutral-50 rounded-lg hover:bg-indigo-50 hover:ring-1 hover:ring-indigo-200 transition" do %>
             <p class="text-2xl font-bold text-indigo-600"><%= current_user.favorites.count %></p>
-            <p class="text-sm text-slate-500">Favorites</p>
+            <p class="text-sm text-slate-500"><%= "Favorite".pluralize(current_user.favorites.count) %></p>
           <% end %>
           <%= link_to diary_entries_path, class: "text-center p-3 bg-neutral-50 rounded-lg hover:bg-indigo-50 hover:ring-1 hover:ring-indigo-200 transition" do %>
             <p class="text-2xl font-bold text-indigo-600"><%= current_user.diary_entries.count %></p>
-            <p class="text-sm text-slate-500">Diary Entries</p>
+            <p class="text-sm text-slate-500"><%= "Diary Entry".pluralize(current_user.diary_entries.count) %></p>
           <% end %>
         </div>
       </section>

@@ -26,8 +26,14 @@ class DashboardsController < ApplicationController
                             .order(created_at: :desc)
                             .limit(20)
 
+    # Get recent review reactions from followed users
+    @recent_reactions = ReviewReaction.where(user_id: followed_user_ids)
+                                      .includes(:user, rating: [ :user, :movie ])
+                                      .order(created_at: :desc)
+                                      .limit(20)
+
     # Combined activity feed (merge and sort by created_at)
-    @activity_feed = (@recent_diary_entries + @recent_ratings)
+    @activity_feed = (@recent_diary_entries + @recent_ratings + @recent_reactions)
                      .sort_by(&:created_at)
                      .reverse
                      .first(30)

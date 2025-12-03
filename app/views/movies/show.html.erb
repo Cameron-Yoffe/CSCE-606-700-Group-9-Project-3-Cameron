@@ -234,6 +234,45 @@
           placeholder.classList.toggle('hidden');
         }
       }
+      
+      // Emoji picker toggle - using event delegation for Turbo compatibility
+      // Only add the listener once by checking a flag on document
+      if (!document._emojiPickerListenerAdded) {
+        document._emojiPickerListenerAdded = true;
+        
+        document.addEventListener('click', function(event) {
+          // Handle emoji picker toggle button clicks
+          const toggleButton = event.target.closest('.emoji-picker-toggle');
+          if (toggleButton) {
+            event.preventDefault();
+            event.stopPropagation();
+            const ratingId = toggleButton.dataset.ratingId;
+            const menu = document.getElementById(`emoji-picker-menu-${ratingId}`);
+            
+            if (menu) {
+              // Close all other menus first
+              document.querySelectorAll('[id^="emoji-picker-menu-"]').forEach(m => {
+                if (m !== menu) m.classList.add('hidden');
+              });
+              
+              // Toggle the menu
+              menu.classList.toggle('hidden');
+            }
+            return;
+          }
+          
+          // Close emoji picker when clicking outside
+          const emojiMenus = document.querySelectorAll('[id^="emoji-picker-menu-"]');
+          emojiMenus.forEach(menu => {
+            if (!menu.classList.contains('hidden')) {
+              const isClickInsideMenu = menu.contains(event.target);
+              if (!isClickInsideMenu) {
+                menu.classList.add('hidden');
+              }
+            }
+          });
+        });
+      }
     </script>
 
     <div class="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
