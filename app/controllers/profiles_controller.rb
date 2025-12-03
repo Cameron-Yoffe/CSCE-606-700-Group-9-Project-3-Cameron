@@ -81,6 +81,19 @@ class ProfilesController < ApplicationController
     redirect_to profile_path, notice: "Import started. Your diary will update shortly once processing finishes."
   end
 
+  def import_letterboxd_ratings
+    upload = params[:letterboxd_ratings_file]
+
+    unless upload.respond_to?(:read) && upload.respond_to?(:size) && upload.size.to_i.positive?
+      return redirect_to profile_path, alert: "Please attach your Letterboxd ratings CSV export before importing."
+    end
+
+    file_content = upload.read
+    LetterboxdRatingsImportJob.perform_later(current_user.id, file_content)
+
+    redirect_to profile_path, notice: "Import started. Your ratings will update shortly once processing finishes."
+  end
+
   private
 
   def set_user
