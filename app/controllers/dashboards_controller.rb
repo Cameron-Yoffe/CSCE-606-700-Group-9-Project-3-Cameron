@@ -33,7 +33,7 @@ class DashboardsController < ApplicationController
                      .first(30)
 
     # Suggested users to follow (users not followed yet, excluding self)
-    @suggested_users = User.where.not(id: followed_user_ids + [current_user.id])
+    @suggested_users = User.where.not(id: followed_user_ids + [ current_user.id ])
                            .order("RANDOM()")
                            .limit(5)
   end
