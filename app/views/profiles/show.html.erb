@@ -22,6 +22,67 @@
       </div>
     </section>
 
+    <!-- Top Movies Section -->
+    <section 
+      class="card space-y-4" 
+      data-controller="top-movies"
+      data-available-favorites='<%= @available_favorites.map { |f| { id: f.id, movie: { id: f.movie.id, title: f.movie.title, poster_url: f.movie.poster_url, tmdb_id: f.movie.tmdb_id } } }.to_json %>'>
+      <div class="flex items-center justify-between">
+        <h2 class="text-xl font-semibold text-slate-900">Top Movies</h2>
+        <span class="text-sm text-slate-600">Your top 5 favorite movies</span>
+      </div>
+      
+      <div class="grid gap-4 md:grid-cols-5">
+        <% (1..5).each do |position| %>
+          <% top_movie = @top_movies.find { |tm| tm.top_position == position } %>
+          
+          <% if top_movie %>
+            <!-- Filled Slot with Movie -->
+            <div class="group relative aspect-[2/3] overflow-hidden rounded-lg bg-neutral-100 shadow-md transition-transform hover:scale-105" data-position="<%= position %>">
+              <%= image_tag top_movie.movie.poster_url, alt: top_movie.movie.title, class: "h-full w-full object-cover" if top_movie.movie.poster_url.present? %>
+              
+              <!-- Position Badge -->
+              <div class="absolute left-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-brand-500 text-sm font-bold text-white shadow-lg">
+                <%= position %>
+              </div>
+              
+              <!-- Hover Overlay with Actions -->
+              <div class="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/70 opacity-0 transition-opacity group-hover:opacity-100">
+                <p class="px-2 text-center text-sm font-medium text-white"><%= top_movie.movie.title %></p>
+                <button 
+                  class="rounded-lg bg-red-500 px-3 py-1 text-xs font-medium text-white hover:bg-red-600"
+                  data-action="click->top-movies#removeFromTop"
+                  data-favorite-id="<%= top_movie.id %>"
+                  data-position="<%= position %>">
+                  Remove
+                </button>
+              </div>
+            </div>
+          <% else %>
+            <!-- Empty Slot -->
+            <div 
+              class="group relative aspect-[2/3] cursor-pointer overflow-hidden rounded-lg border-2 border-dashed border-neutral-300 bg-neutral-50 transition-all hover:border-brand-400 hover:bg-brand-50"
+              data-action="click->top-movies#openMovieSelector"
+              data-position="<%= position %>">
+              
+              <div class="flex h-full flex-col items-center justify-center gap-2 text-neutral-400 group-hover:text-brand-500">
+                <!-- Plus Icon -->
+                <svg class="h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                <p class="text-xs font-medium">Add Movie</p>
+              </div>
+              
+              <!-- Position Badge -->
+              <div class="absolute left-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-neutral-200 text-sm font-bold text-neutral-600 group-hover:bg-brand-100 group-hover:text-brand-700">
+                <%= position %>
+              </div>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+    </section>
+
     <section class="grid gap-4 md:grid-cols-3">
       <div class="card space-y-2">
         <p class="text-sm font-medium text-slate-600">Diary entries</p>

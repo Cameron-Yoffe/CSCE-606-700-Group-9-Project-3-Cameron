@@ -9,7 +9,12 @@ Rails.application.routes.draw do
   resources :movies do
     resources :tags, only: %i[create destroy]
   end
-  resources :favorites, only: %i[index create destroy]
+  resources :favorites, only: %i[index create destroy] do
+    member do
+      patch :set_top_position
+      delete :remove_top_position
+    end
+  end
   resources :watchlists, only: %i[create destroy]
   resources :ratings, only: %i[create update destroy]
   resources :review_reactions, only: %i[create]

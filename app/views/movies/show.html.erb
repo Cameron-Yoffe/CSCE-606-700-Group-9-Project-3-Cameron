@@ -97,7 +97,7 @@
                   <!-- User Avatar -->
                   <div class="flex-shrink-0">
                     <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-semibold">
-                      <%= user_rating.user.email[0].upcase %>
+                      <%= user_rating.user.username[0].upcase %>
                     </div>
                   </div>
                   
@@ -107,7 +107,7 @@
                     <div class="flex items-center justify-between mb-2">
                       <div>
                         <div class="flex items-center gap-2">
-                          <span class="font-medium text-slate-900"><%= user_rating.user.email.split('@').first.capitalize %></span>
+                          <span class="font-medium text-slate-900"><%= user_rating.user.username %></span>
                           <!-- Star Rating Display -->
                           <div class="flex items-center gap-1">
                             <% (1..5).each do |star| %>

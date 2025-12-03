@@ -10,6 +10,7 @@ class User < ApplicationRecord
   has_many :movies, through: :watchlists
   has_many :favorite_movies, through: :favorites, source: :movie
   has_many :review_reactions, dependent: :destroy
+  has_many :top_movies, -> { where.not(top_position: nil).order(:top_position) }, class_name: "Favorite"
 
   # Validations
   validates :email, presence: true, uniqueness: true, format: { with: URI::MailTo::EMAIL_REGEXP, message: "must be a valid email address" }

@@ -17,6 +17,10 @@ class ProfilesController < ApplicationController
 
     @monthly_chart_data = build_monthly_chart_data
     @genre_chart_data = build_genre_chart_data
+
+    # Load top 5 movies
+    @top_movies = @user.top_movies.includes(:movie)
+    @available_favorites = @user.favorites.regular_favorites.includes(:movie).order(created_at: :desc)
   end
 
   def import_letterboxd
