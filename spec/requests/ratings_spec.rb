@@ -66,4 +66,42 @@ RSpec.describe "Ratings", type: :request do
       expect(rating.reload.value).to eq(5)
     end
   end
+
+  describe "DELETE /ratings/:id" do
+    it "deletes a rating" do
+      sign_in(user)
+      rating = create(:rating, user: user, movie: movie, value: 8)
+
+      expect {
+        delete rating_path(rating)
+      }.to change(Rating, :count).by(-1)
+
+      expect(response).to redirect_to(movie_path(movie.tmdb_id))
+      expect(flash[:notice]).to eq("Review deleted successfully.")
+    end
+  end
+
+  describe "edge cases" do
+    it "creates rating with movie_id in params (set_movie branch)" do
+      sign_in(user)
+
+      expect {
+        post ratings_path, params: { movie_id: movie.id, rating: { value: 7, review: "Good movie" } }
+      }.to change(Rating, :count).by(1)
+
+      expect(response).to redirect_to(movie_path(movie.tmdb_id))
+    end
+
+    it "updates rating with movie_id in rating params (triggers set_rating find_by!)" do
+      sign_in(user)
+      rating = create(:rating, user: user, movie: movie, value: 6)
+
+      # Update with movie_id in rating params, not using params[:id] path in set_movie
+      # This triggers the set_rating method to find the rating by movie_id
+      patch rating_path(rating), params: { rating: { value: 8, movie_id: movie.id } }
+
+      expect(response).to redirect_to(movie_path(movie.tmdb_id))
+      expect(rating.reload.value).to eq(8)
+    end
+  end
 end
