@@ -1,5 +1,4 @@
 class LetterboxdDiaryImporter < LetterboxdImportBase
-
   private
 
   def import_row(row)
