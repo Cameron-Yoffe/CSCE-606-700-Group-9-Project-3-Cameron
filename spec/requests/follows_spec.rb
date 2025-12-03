@@ -101,6 +101,25 @@ RSpec.describe "Follows", type: :request do
         expect(body["status"]).to eq("pending")
       end
     end
+
+    context "when follow creation fails" do
+      before { sign_in(user) }
+
+      it "returns error with HTML format" do
+        allow_any_instance_of(User).to receive(:follow).and_return(nil)
+        post "/users/#{other_user.id}/follow"
+        expect(response).to have_http_status(:redirect)
+        expect(flash[:alert]).to eq("Unable to follow user.")
+      end
+
+      it "returns error with JSON format" do
+        allow_any_instance_of(User).to receive(:follow).and_return(nil)
+        post "/users/#{other_user.id}/follow", headers: { "Accept" => "application/json" }
+        expect(response).to have_http_status(:unprocessable_entity)
+        body = JSON.parse(response.body)
+        expect(body["error"]).to eq("Unable to follow user")
+      end
+    end
   end
 
   describe "DELETE /follows/:id" do
