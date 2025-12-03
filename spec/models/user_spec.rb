@@ -171,4 +171,53 @@ RSpec.describe User, type: :model do
       expect(user.errors[:username]).to include('must be between 3 and 20 characters')
     end
   end
+
+  describe 'follow methods' do
+    let(:user) { create(:user) }
+    let(:other_user) { create(:user) }
+    let(:private_user) { create(:user, is_private: true) }
+
+    describe '#followed_by?' do
+      it 'returns true when user is followed by other_user' do
+        create(:follow, follower: other_user, followed: user, status: 'accepted')
+        expect(user.followed_by?(other_user)).to be true
+      end
+
+      it 'returns false when user is not followed by other_user' do
+        expect(user.followed_by?(other_user)).to be false
+      end
+
+      it 'returns false when follow is pending' do
+        create(:follow, follower: other_user, followed: user, status: 'pending')
+        expect(user.followed_by?(other_user)).to be false
+      end
+    end
+
+    describe '#follow_status' do
+      it 'returns nil when not following' do
+        expect(user.follow_status(other_user)).to be_nil
+      end
+
+      it 'returns accepted when following accepted' do
+        create(:follow, follower: user, followed: other_user, status: 'accepted')
+        expect(user.follow_status(other_user)).to eq('accepted')
+      end
+
+      it 'returns pending when follow is pending' do
+        create(:follow, follower: user, followed: other_user, status: 'pending')
+        expect(user.follow_status(other_user)).to eq('pending')
+      end
+    end
+
+    describe '#unfollow' do
+      it 'removes the follow relationship' do
+        create(:follow, follower: user, followed: other_user, status: 'accepted')
+        expect { user.unfollow(other_user) }.to change { user.active_follows.count }.by(-1)
+      end
+
+      it 'returns nil when not following the user' do
+        expect(user.unfollow(other_user)).to be_nil
+      end
+    end
+  end
 end
