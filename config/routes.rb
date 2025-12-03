@@ -51,7 +51,7 @@ Rails.application.routes.draw do
   get "users/search", to: "dashboards#search", as: :search_users
   get "profile", to: "profiles#show"
   post "profile/import_letterboxd", to: "profiles#import_letterboxd", as: :profile_import_letterboxd
-  get "profile/edit", to: "profiles#edit"
+  get "profile/edit", to: "profiles#edit", as: :profile_edit
   patch "profile", to: "profiles#update"
 
   # User profiles (for viewing other users)
