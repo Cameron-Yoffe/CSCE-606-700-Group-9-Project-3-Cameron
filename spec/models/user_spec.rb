@@ -6,6 +6,8 @@ RSpec.describe User, type: :model do
     it { should have_many(:ratings).dependent(:destroy) }
     it { should have_many(:watchlists).dependent(:destroy) }
     it { should have_many(:movies).through(:watchlists) }
+    it { should have_many(:favorites).dependent(:destroy) }
+    it { should have_many(:top_movies).class_name('Favorite') }
   end
 
   describe 'validations' do

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_11_27_071643) do
+ActiveRecord::Schema[8.1].define(version: 2025_11_27_084447) do
   create_table "diary_entries", force: :cascade do |t|
     t.text "content", null: false
     t.datetime "created_at", null: false
@@ -30,10 +30,12 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_27_071643) do
   create_table "favorites", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "movie_id", null: false
+    t.integer "top_position"
     t.datetime "updated_at", null: false
     t.integer "user_id", null: false
     t.index ["movie_id"], name: "index_favorites_on_movie_id"
     t.index ["user_id", "movie_id"], name: "index_favorites_on_user_id_and_movie_id", unique: true
+    t.index ["user_id", "top_position"], name: "index_favorites_on_user_id_and_top_position", unique: true, where: "top_position IS NOT NULL"
     t.index ["user_id"], name: "index_favorites_on_user_id"
   end
 
