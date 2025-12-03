@@ -1,4 +1,6 @@
 class User < ApplicationRecord
+  attribute :user_embedding, :json, default: {}
+
   # Secure password
   has_secure_password validations: false
 
@@ -70,6 +72,10 @@ class User < ApplicationRecord
 
   def unread_notifications_count
     notifications.unread.count
+  end
+
+  def recompute_embedding!(decay: true)
+    Recommender::UserEmbedding.build_and_persist!(self, decay: decay)
   end
 
   private

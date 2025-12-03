@@ -6,6 +6,7 @@ class Rating < ApplicationRecord
 
   # Callbacks
   before_validation :strip_review_whitespace
+  after_commit :enqueue_embedding_refresh
 
   # Validations
   validates :user_id, presence: true
@@ -21,5 +22,11 @@ class Rating < ApplicationRecord
       self.review = review.strip
       self.review = "" if review.empty?
     end
+  end
+
+  def enqueue_embedding_refresh
+    return unless user_id
+
+    RecomputeUserEmbeddingJob.perform_later(user_id)
   end
 end

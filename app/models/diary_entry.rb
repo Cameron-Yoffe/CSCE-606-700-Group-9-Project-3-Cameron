@@ -3,6 +3,9 @@ class DiaryEntry < ApplicationRecord
   belongs_to :user
   belongs_to :movie
 
+  # Callbacks
+  after_commit :enqueue_embedding_refresh
+
   # Validations
   validates :user_id, presence: true
   validates :movie_id, presence: true
@@ -20,5 +23,11 @@ class DiaryEntry < ApplicationRecord
     if watched_date.present? && watched_date > Date.today
       errors.add(:watched_date, "can't be in the future")
     end
+  end
+
+  def enqueue_embedding_refresh
+    return unless user_id
+
+    RecomputeUserEmbeddingJob.perform_later(user_id)
   end
 end
