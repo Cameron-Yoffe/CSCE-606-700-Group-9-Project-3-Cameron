@@ -1,51 +1,286 @@
 <div class="container mx-auto px-4 py-8">
-  <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+  <!-- Header -->
+  <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-8">
     <h1 class="text-4xl font-bold">Welcome, <%= @user.first_name || @user.username %>!</h1>
     <div class="flex gap-3">
       <%= link_to "Search Movies", movies_path, class: "bg-brand-600 hover:bg-brand-700 text-white font-bold py-2 px-4 rounded-md shadow" %>
-      <%= link_to "View Profile", profile_path, class: "bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-md shadow" %>
-      <%= button_to "Sign Out", logout_path, method: :delete, class: "bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md" %>
+      <%= link_to "My Library", favorites_path, class: "bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-md shadow" %>
+      <%= link_to "View Profile", profile_path, class: "bg-slate-600 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded-md shadow" %>
     </div>
   </div>
-  <section class="mt-8">
-    <h2 class="text-2xl font-semibold">Watchlist</h2>
-    <% watchlists = @user.watchlists.includes(:movie) %>
-    <% if watchlists.any? %>
-      <%= turbo_frame_tag "library-list" do %>
-        <div class="mt-4 grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          <% watchlists.each do |wl| %>
-            <%= turbo_frame_tag "watchlist-item-#{wl.id}" do %>
-              <% m = wl.movie %>
-              <div class="rounded-lg border border-neutral-200 bg-white shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-                <!-- Movie Poster -->
-                <div class="relative">
-                  <%= image_tag m.poster_url.presence || "https://placehold.co/150x225?text=No+Image", alt: m.title, class: "w-full h-40 object-cover" %>
-                  <div class="absolute top-2 right-2">
-                    <%= button_to "Remove", watchlist_path(wl), method: :delete, data: { turbo_frame: "watchlist-item-#{wl.id}" }, class: "inline-flex items-center rounded-md bg-red-600 hover:bg-red-700 px-2 py-1 text-xs text-white font-medium" %>
+
+  <div class="grid gap-8 lg:grid-cols-3">
+    <!-- Main Feed Column -->
+    <div class="lg:col-span-2 space-y-6">
+      <!-- User Search Section -->
+      <section class="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+        <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+          <svg class="w-5 h-5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+          Find Users
+        </h2>
+        <%= form_with url: dashboard_path, method: :get, local: true, class: "flex gap-2" do |f| %>
+          <%= f.text_field :search, 
+              value: params[:search], 
+              placeholder: "Search by username or email...", 
+              class: "flex-1 rounded-lg border border-neutral-300 px-4 py-2 focus:border-brand-500 focus:ring-brand-500" %>
+          <%= f.submit "Search", class: "px-6 py-2 bg-brand-600 text-white font-semibold rounded-lg hover:bg-brand-700 transition cursor-pointer" %>
+        <% end %>
+
+        <% if params[:search].present? %>
+          <div class="mt-4">
+            <h3 class="text-sm font-medium text-slate-500 mb-3">Search Results</h3>
+            <% if @search_results.any? %>
+              <div class="space-y-2">
+                <% @search_results.each do |user| %>
+                  <div class="flex items-center justify-between p-3 rounded-lg bg-neutral-50 hover:bg-neutral-100 transition">
+                    <div class="flex items-center gap-3">
+                      <div class="w-10 h-10 rounded-full bg-brand-100 flex items-center justify-center">
+                        <span class="text-brand-700 font-semibold"><%= user.username.first.upcase %></span>
+                      </div>
+                      <div>
+                        <%= link_to user.username, user_profile_path(user), class: "font-medium text-slate-900 hover:text-brand-600" %>
+                        <% if user.is_private? %>
+                          <span class="ml-2 inline-flex items-center text-xs text-slate-500">
+                            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                              <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path>
+                            </svg>
+                            Private
+                          </span>
+                        <% end %>
+                        <p class="text-sm text-slate-500"><%= user.followers.count %> followers</p>
+                      </div>
+                    </div>
+                    <div>
+                      <% if current_user.following?(user) %>
+                        <%= button_to "Following", follow_path(current_user.active_follows.find_by(followed: user)), 
+                            method: :delete, 
+                            class: "px-4 py-1.5 text-sm font-medium text-slate-600 bg-slate-100 rounded-full hover:bg-red-100 hover:text-red-600 transition" %>
+                      <% elsif current_user.requested_follow?(user) %>
+                        <span class="px-4 py-1.5 text-sm font-medium text-amber-600 bg-amber-50 rounded-full">Requested</span>
+                      <% else %>
+                        <%= button_to "Follow", follow_user_path(user), 
+                            method: :post, 
+                            class: "px-4 py-1.5 text-sm font-medium text-white bg-brand-600 rounded-full hover:bg-brand-700 transition" %>
+                      <% end %>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+            <% else %>
+              <p class="text-slate-500 text-sm">No users found matching "<%= params[:search] %>"</p>
+            <% end %>
+          </div>
+        <% end %>
+      </section>
+
+      <!-- Activity Feed -->
+      <section class="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+        <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+          <svg class="w-5 h-5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2.5 2.5 0 00-2.5-2.5H15"></path>
+          </svg>
+          Activity Feed
+        </h2>
+
+        <% if @activity_feed.any? %>
+          <div class="space-y-4">
+            <% @activity_feed.each do |activity| %>
+              <div class="flex gap-4 p-4 rounded-lg bg-neutral-50 hover:bg-neutral-100 transition">
+                <!-- User Avatar -->
+                <div class="flex-shrink-0">
+                  <div class="w-10 h-10 rounded-full bg-brand-100 flex items-center justify-center">
+                    <span class="text-brand-700 font-semibold"><%= activity.user.username.first.upcase %></span>
                   </div>
                 </div>
 
-                <!-- Movie Info -->
-                <div class="p-3 space-y-2">
-                  <h3 class="font-semibold text-sm line-clamp-2 text-slate-900"><%= m.title %></h3>
-                  <!-- Tags -->
-                  <% if m.tags.any? %>
-                    <div class="flex flex-wrap gap-1 pt-2">
-                      <% m.tags.each do |tag| %>
-                        <span class="inline-flex items-center rounded-full bg-gray-200 px-2 py-0.5 text-xs font-medium text-gray-800" style="background-color: rgb(229, 231, 235); color: rgb(31, 41, 55); border-radius: 9999px; padding: 2px 8px; display: inline-flex; align-items: center;">
-                          <%= tag.name %>
-                        </span>
+                <!-- Activity Content -->
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-start justify-between">
+                    <div>
+                      <%= link_to activity.user.username, user_profile_path(activity.user), class: "font-medium text-slate-900 hover:text-brand-600" %>
+                      <% if activity.is_a?(DiaryEntry) %>
+                        <span class="text-slate-600">logged</span>
+                      <% else %>
+                        <span class="text-slate-600">rated</span>
+                      <% end %>
+                      <% if activity.movie %>
+                        <%= link_to activity.movie.title, movie_path(activity.movie.tmdb_id || activity.movie.id), class: "font-medium text-slate-900 hover:text-brand-600" %>
                       <% end %>
                     </div>
+                    <span class="text-xs text-slate-400"><%= time_ago_in_words(activity.created_at) %> ago</span>
+                  </div>
+
+                  <% if activity.is_a?(DiaryEntry) && activity.content.present? %>
+                    <p class="mt-2 text-sm text-slate-600 line-clamp-2"><%= activity.content %></p>
+                  <% end %>
+
+                  <% if activity.is_a?(Rating) %>
+                    <div class="mt-2 flex items-center gap-1">
+                      <% (activity.value / 2).times do %>
+                        <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                        </svg>
+                      <% end %>
+                      <% (5 - activity.value / 2).times do %>
+                        <svg class="w-4 h-4 text-slate-300" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                        </svg>
+                      <% end %>
+                      <span class="ml-1 text-sm text-slate-500"><%= activity.value %>/10</span>
+                    </div>
+                    <% if activity.review.present? %>
+                      <p class="mt-2 text-sm text-slate-600 line-clamp-2"><%= activity.review %></p>
+                    <% end %>
+                  <% end %>
+                </div>
+
+                <!-- Movie Poster Thumbnail -->
+                <% if activity.movie %>
+                  <div class="flex-shrink-0">
+                    <%= link_to movie_path(activity.movie.tmdb_id || activity.movie.id) do %>
+                      <% poster = activity.movie.poster_image_url %>
+                      <% if poster.present? %>
+                        <img src="<%= poster %>" 
+                             alt="<%= activity.movie.title %>" 
+                             class="w-12 h-18 object-cover rounded-md shadow-sm"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <div class="w-12 h-18 bg-slate-200 rounded-md shadow-sm items-center justify-center hidden">
+                          <svg class="w-6 h-6 text-slate-400" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M15 11h-1V10c0-.55-.45-1-1-1s-1 .45-1 1v1h-1c-.55 0-1 .45-1 1s.45 1 1 1h1v1c0 .55.45 1 1 1s1-.45 1-1v-1h1c.55 0 1-.45 1-1s-.45-1-1-1zM19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM8 6c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm0 10c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm9 2c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm0-8c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>
+                          </svg>
+                        </div>
+                      <% else %>
+                        <div class="w-12 h-18 bg-slate-200 rounded-md shadow-sm flex items-center justify-center">
+                          <svg class="w-6 h-6 text-slate-400" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M15 11h-1V10c0-.55-.45-1-1-1s-1 .45-1 1v1h-1c-.55 0-1 .45-1 1s.45 1 1 1h1v1c0 .55.45 1 1 1s1-.45 1-1v-1h1c.55 0 1-.45 1-1s-.45-1-1-1zM19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM8 6c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm0 10c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm9 2c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm0-8c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>
+                          </svg>
+                        </div>
+                      <% end %>
+                    <% end %>
+                  </div>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        <% else %>
+          <div class="text-center py-8">
+            <svg class="mx-auto h-12 w-12 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+            </svg>
+            <h3 class="mt-4 text-lg font-medium text-slate-900">No activity yet</h3>
+            <p class="mt-2 text-slate-500">Follow some users to see their movie activity here!</p>
+          </div>
+        <% end %>
+      </section>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="space-y-6">
+      <!-- Quick Stats -->
+      <section class="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+        <h2 class="text-lg font-semibold mb-4">Your Stats</h2>
+        <div class="grid grid-cols-2 gap-4">
+          <%= link_to user_followers_path(current_user), class: "text-center p-3 bg-neutral-50 rounded-lg hover:bg-brand-50 hover:ring-1 hover:ring-brand-200 transition" do %>
+            <p class="text-2xl font-bold text-brand-600"><%= current_user.followers.count %></p>
+            <p class="text-sm text-slate-500">Followers</p>
+          <% end %>
+          <%= link_to user_following_path(current_user), class: "text-center p-3 bg-neutral-50 rounded-lg hover:bg-brand-50 hover:ring-1 hover:ring-brand-200 transition" do %>
+            <p class="text-2xl font-bold text-brand-600"><%= current_user.following.count %></p>
+            <p class="text-sm text-slate-500">Following</p>
+          <% end %>
+          <%= link_to favorites_path, class: "text-center p-3 bg-neutral-50 rounded-lg hover:bg-indigo-50 hover:ring-1 hover:ring-indigo-200 transition" do %>
+            <p class="text-2xl font-bold text-indigo-600"><%= current_user.favorites.count %></p>
+            <p class="text-sm text-slate-500">Favorites</p>
+          <% end %>
+          <%= link_to diary_entries_path, class: "text-center p-3 bg-neutral-50 rounded-lg hover:bg-indigo-50 hover:ring-1 hover:ring-indigo-200 transition" do %>
+            <p class="text-2xl font-bold text-indigo-600"><%= current_user.diary_entries.count %></p>
+            <p class="text-sm text-slate-500">Diary Entries</p>
+          <% end %>
+        </div>
+      </section>
+
+      <!-- Suggested Users -->
+      <% if @suggested_users.any? %>
+        <section class="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+          <h2 class="text-lg font-semibold mb-4">Suggested Users</h2>
+          <div class="space-y-3">
+            <% @suggested_users.each do |user| %>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center">
+                    <span class="text-brand-700 text-sm font-semibold"><%= user.username.first.upcase %></span>
+                  </div>
+                  <div>
+                    <%= link_to user.username, user_profile_path(user), class: "text-sm font-medium text-slate-900 hover:text-brand-600" %>
+                    <% if user.is_private? %>
+                      <svg class="inline w-3 h-3 ml-1 text-slate-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path>
+                      </svg>
+                    <% end %>
+                  </div>
+                </div>
+                <% if current_user.following?(user) %>
+                  <% follow = current_user.active_follows.find_by(followed: user) %>
+                  <%= button_to "Following", follow_path(follow), 
+                      method: :delete, 
+                      class: "px-3 py-1 text-xs font-medium text-white bg-brand-600 rounded-full hover:bg-red-600 transition" %>
+                <% elsif current_user.requested_follow?(user) %>
+                  <% follow = current_user.active_follows.find_by(followed: user) %>
+                  <%= button_to "Requested", follow_path(follow), 
+                      method: :delete, 
+                      class: "px-3 py-1 text-xs font-medium text-slate-600 bg-slate-200 rounded-full hover:bg-red-100 hover:text-red-600 transition" %>
+                <% else %>
+                  <%= button_to "Follow", follow_user_path(user), 
+                      method: :post, 
+                      class: "px-3 py-1 text-xs font-medium text-brand-600 bg-brand-50 rounded-full hover:bg-brand-100 transition" %>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        </section>
+      <% end %>
+
+      <!-- Pending Follow Requests -->
+      <% pending_requests = current_user.pending_follow_requests.includes(:follower).limit(5) %>
+      <% if pending_requests.any? %>
+        <section class="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+          <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
+            Follow Requests
+            <span class="inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-500 rounded-full">
+              <%= pending_requests.count %>
+            </span>
+          </h2>
+          <div class="space-y-3">
+            <% pending_requests.each do |follow| %>
+              <div class="flex items-center justify-between p-3 bg-neutral-50 rounded-lg">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center">
+                    <span class="text-brand-700 text-sm font-semibold"><%= follow.follower.username.first.upcase %></span>
+                  </div>
+                  <%= link_to follow.follower.username, user_profile_path(follow.follower), class: "text-sm font-medium text-slate-900 hover:text-brand-600" %>
+                </div>
+                <div class="flex gap-1">
+                  <%= button_to accept_follow_path(follow), method: :patch, class: "p-1.5 text-green-600 hover:bg-green-100 rounded-full transition" do %>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                  <% end %>
+                  <%= button_to reject_follow_path(follow), method: :delete, class: "p-1.5 text-red-600 hover:bg-red-100 rounded-full transition" do %>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
                   <% end %>
                 </div>
               </div>
             <% end %>
+          </div>
+          <% if current_user.pending_follow_requests.count > 5 %>
+            <%= link_to "View all requests", notifications_path, class: "block mt-3 text-center text-sm text-brand-600 hover:text-brand-700" %>
           <% end %>
-        </div>
+        </section>
       <% end %>
-    <% else %>
-      <p class="mt-2 text-slate-600">Your watchlist is empty. Add movies from the search results.</p>
-    <% end %>
-  </section>
+    </div>
+  </div>
 </div>

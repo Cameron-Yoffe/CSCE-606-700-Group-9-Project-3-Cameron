@@ -7,11 +7,16 @@ FactoryBot.define do
     first_name { Faker::Name.first_name }
     last_name { Faker::Name.last_name }
     bio { Faker::Lorem.sentence }
+    is_private { false }
 
     # Skip password validation for tests that want to set it manually
     trait :with_invalid_password do
       password { "weak" }
       password_confirmation { "weak" }
+    end
+
+    trait :private do
+      is_private { true }
     end
   end
 
@@ -63,5 +68,34 @@ FactoryBot.define do
     user { association :user }
     rating { association :rating }
     emoji { ReviewReaction::ALLOWED_EMOJIS.first }
+  end
+
+  factory :follow do
+    association :follower, factory: :user
+    association :followed, factory: :user
+    status { "accepted" }
+
+    trait :pending do
+      status { "pending" }
+    end
+  end
+
+  factory :notification do
+    user { association :user }
+    association :notifiable, factory: :follow
+    notification_type { "new_follower" }
+    read { false }
+
+    trait :follow_request do
+      notification_type { "follow_request" }
+    end
+
+    trait :follow_accepted do
+      notification_type { "follow_accepted" }
+    end
+
+    trait :read do
+      read { true }
+    end
   end
 end

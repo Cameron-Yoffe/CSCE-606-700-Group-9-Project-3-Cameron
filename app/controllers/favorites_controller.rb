@@ -3,6 +3,8 @@ class FavoritesController < ApplicationController
 
   def index
     @favorites = current_user.favorites.includes(:movie).order(created_at: :desc)
+    @watchlists = current_user.watchlists.includes(:movie).order(created_at: :desc)
+    @top_movies = current_user.top_movies.includes(:movie)
   end
 
   def create

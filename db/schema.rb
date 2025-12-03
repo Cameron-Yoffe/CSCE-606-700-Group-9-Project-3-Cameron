@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_02_075743) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_03_043412) do
   create_table "diary_entries", force: :cascade do |t|
     t.text "content", null: false
     t.datetime "created_at", null: false
@@ -41,6 +41,17 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_02_075743) do
     t.index ["user_id"], name: "index_favorites_on_user_id"
   end
 
+  create_table "follows", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "followed_id", null: false
+    t.integer "follower_id", null: false
+    t.string "status", default: "accepted", null: false
+    t.datetime "updated_at", null: false
+    t.index ["followed_id"], name: "index_follows_on_followed_id"
+    t.index ["follower_id", "followed_id"], name: "index_follows_on_follower_id_and_followed_id", unique: true
+    t.index ["follower_id"], name: "index_follows_on_follower_id"
+  end
+
   create_table "movie_tags", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "movie_id", null: false
@@ -57,9 +68,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_02_075743) do
     t.datetime "created_at", null: false
     t.text "description"
     t.string "director"
-    t.json "embedding", default: {}, null: false
     t.text "genres", default: "[]"
-    t.json "movie_embedding", default: {}, null: false
     t.string "poster_url"
     t.date "release_date"
     t.integer "runtime"
@@ -68,10 +77,23 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_02_075743) do
     t.datetime "updated_at", null: false
     t.float "vote_average"
     t.integer "vote_count"
-    t.index ["embedding"], name: "index_movies_on_embedding"
     t.index ["release_date"], name: "index_movies_on_release_date"
     t.index ["title"], name: "index_movies_on_title"
     t.index ["tmdb_id"], name: "index_movies_on_tmdb_id", unique: true
+  end
+
+  create_table "notifications", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "notifiable_id", null: false
+    t.string "notifiable_type", null: false
+    t.string "notification_type", null: false
+    t.boolean "read", default: false, null: false
+    t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
+    t.index ["notifiable_type", "notifiable_id"], name: "index_notifications_on_notifiable"
+    t.index ["user_id", "created_at"], name: "index_notifications_on_user_id_and_created_at"
+    t.index ["user_id", "read"], name: "index_notifications_on_user_id_and_read"
+    t.index ["user_id"], name: "index_notifications_on_user_id"
   end
 
   create_table "ratings", force: :cascade do |t|
@@ -114,8 +136,8 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_02_075743) do
     t.text "bio"
     t.datetime "created_at", null: false
     t.string "email", null: false
-    t.json "embedding", default: {}, null: false
     t.string "first_name"
+    t.boolean "is_private", default: false, null: false
     t.string "last_name"
     t.string "password_digest", null: false
     t.string "profile_image_url"
@@ -123,10 +145,8 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_02_075743) do
     t.text "top_5_movies"
     t.string "uid"
     t.datetime "updated_at", null: false
-    t.json "user_embedding", default: {}, null: false
     t.string "username", null: false
     t.index ["email"], name: "index_users_on_email", unique: true
-    t.index ["embedding"], name: "index_users_on_embedding"
     t.index ["provider"], name: "index_users_on_provider"
     t.index ["uid"], name: "index_users_on_uid"
     t.index ["username"], name: "index_users_on_username", unique: true
@@ -148,8 +168,11 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_02_075743) do
   add_foreign_key "diary_entries", "users"
   add_foreign_key "favorites", "movies"
   add_foreign_key "favorites", "users"
+  add_foreign_key "follows", "users", column: "followed_id"
+  add_foreign_key "follows", "users", column: "follower_id"
   add_foreign_key "movie_tags", "movies"
   add_foreign_key "movie_tags", "tags"
+  add_foreign_key "notifications", "users"
   add_foreign_key "ratings", "movies"
   add_foreign_key "ratings", "users"
   add_foreign_key "review_reactions", "ratings"

@@ -11,30 +11,94 @@
         <% end %>
         <div>
           <p class="text-sm font-semibold uppercase tracking-wide text-brand-700">Profile</p>
-          <h1 class="font-display text-3xl font-semibold text-slate-900"><%= @user.username %></h1>
+          <div class="flex items-center gap-2">
+            <h1 class="font-display text-3xl font-semibold text-slate-900"><%= @user.username %></h1>
+            <% if @user.is_private? %>
+              <span class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
+                <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
+                </svg>
+                Private
+              </span>
+            <% end %>
+          </div>
           <p class="text-slate-700 max-w-xl"><%= @user.bio.presence || "Add a short bio to tell others about your movie tastes." %></p>
+          
+          <!-- Followers/Following Counts -->
+          <div class="mt-2 flex items-center gap-4 text-sm">
+            <%= link_to user_followers_path(@user), class: "hover:text-brand-600" do %>
+              <span class="font-semibold text-slate-900"><%= @followers_count %></span>
+              <span class="text-slate-600">followers</span>
+            <% end %>
+            <%= link_to user_following_path(@user), class: "hover:text-brand-600" do %>
+              <span class="font-semibold text-slate-900"><%= @following_count %></span>
+              <span class="text-slate-600">following</span>
+            <% end %>
+          </div>
         </div>
       </div>
       <div class="flex flex-wrap items-center justify-end gap-3 text-sm text-slate-600">
         <div class="rounded-full bg-neutral-50 px-3 py-1 ring-1 ring-neutral-100">Member since <%= @user.created_at.to_fs(:long) %></div>
-        <%= link_to "Go to dashboard", dashboard_path, class: "btn btn-secondary" %>
-        <%= button_tag "Edit Profile", type: "button", class: "btn btn-primary" %>
+        <% if @viewing_own_profile %>
+          <%= link_to "Go to dashboard", dashboard_path, class: "btn btn-secondary" %>
+          <%= link_to "Edit Profile", profile_edit_path, class: "btn btn-primary" %>
+        <% else %>
+          <!-- Follow/Unfollow Button -->
+          <% if @follow_status == "accepted" %>
+            <%= button_to "Following", follow_path(@follow), method: :delete, class: "btn btn-secondary", data: { confirm: "Are you sure you want to unfollow #{@user.username}?" } %>
+          <% elsif @follow_status == "pending" %>
+            <%= button_to "Requested", follow_path(@follow), method: :delete, class: "btn btn-secondary text-amber-600 border-amber-300 bg-amber-50", data: { confirm: "Cancel follow request?" } %>
+          <% else %>
+            <%= button_to "Follow", follow_user_path(@user), method: :post, class: "btn btn-primary" %>
+          <% end %>
+        <% end %>
       </div>
     </section>
 
+    <% if @is_private_and_not_following %>
+      <!-- Private Profile Message - Instagram Style -->
+      <section class="card text-center py-20">
+        <div class="mx-auto max-w-md">
+          <div class="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full border-2 border-slate-300">
+            <svg class="h-12 w-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+            </svg>
+          </div>
+          <h2 class="text-xl font-semibold text-slate-900">This Account is Private</h2>
+          <p class="mt-3 text-slate-600">Follow this account to see their movies, ratings, and activity.</p>
+          <% if @follow_status == "pending" %>
+            <div class="mt-6">
+              <span class="inline-flex items-center gap-2 rounded-full bg-amber-50 px-4 py-2 text-sm font-medium text-amber-700 ring-1 ring-amber-200">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                Follow Request Sent
+              </span>
+            </div>
+          <% else %>
+            <%= button_to "Follow", follow_user_path(@user), method: :post, class: "mt-6 inline-flex items-center gap-2 rounded-lg bg-brand-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-brand-700 transition" %>
+          <% end %>
+        </div>
+      </section>
+    <% else %>
+
     <!-- Top Movies Section -->
+    <% if @viewing_own_profile %>
     <section 
       class="card space-y-4" 
       data-controller="top-movies"
-      data-available-favorites='<%= @available_favorites.map { |f| { id: f.id, movie: { id: f.movie.id, title: f.movie.title, poster_url: f.movie.poster_url, tmdb_id: f.movie.tmdb_id } } }.to_json %>'>
+      data-available-favorites='<%= (@available_favorites || []).map { |f| { id: f.id, movie: { id: f.movie.id, title: f.movie.title, poster_url: f.movie.poster_url, tmdb_id: f.movie.tmdb_id } } }.to_json %>'>
+    <% else %>
+    <section class="card space-y-4">
+    <% end %>
       <div class="flex items-center justify-between">
         <h2 class="text-xl font-semibold text-slate-900">Top Movies</h2>
-        <span class="text-sm text-slate-600">Your top 5 favorite movies</span>
+        <span class="text-sm text-slate-600"><%= @viewing_own_profile ? "Your top 5 favorite movies" : "#{@user.username}'s top 5 favorite movies" %></span>
       </div>
       
       <div class="grid gap-4 md:grid-cols-5">
         <% (1..5).each do |position| %>
-          <% top_movie = @top_movies.find { |tm| tm.top_position == position } %>
+          <% top_movie = @top_movies&.find { |tm| tm.top_position == position } %>
           
           <% if top_movie %>
             <!-- Filled Slot with Movie -->
@@ -49,6 +113,7 @@
               <!-- Hover Overlay with Actions -->
               <div class="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/70 opacity-0 transition-opacity group-hover:opacity-100">
                 <p class="px-2 text-center text-sm font-medium text-white"><%= top_movie.movie.title %></p>
+                <% if @viewing_own_profile %>
                 <button 
                   class="rounded-lg bg-red-500 px-3 py-1 text-xs font-medium text-white hover:bg-red-600"
                   data-action="click->top-movies#removeFromTop"
@@ -56,10 +121,12 @@
                   data-position="<%= position %>">
                   Remove
                 </button>
+                <% end %>
               </div>
             </div>
           <% else %>
             <!-- Empty Slot -->
+            <% if @viewing_own_profile %>
             <div 
               class="group relative aspect-[2/3] cursor-pointer overflow-hidden rounded-lg border-2 border-dashed border-neutral-300 bg-neutral-50 transition-all hover:border-brand-400 hover:bg-brand-50"
               data-action="click->top-movies#openMovieSelector"
@@ -78,6 +145,13 @@
                 <%= position %>
               </div>
             </div>
+            <% else %>
+            <div class="relative aspect-[2/3] overflow-hidden rounded-lg border-2 border-dashed border-neutral-200 bg-neutral-50">
+              <div class="absolute left-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-neutral-200 text-sm font-bold text-neutral-400">
+                <%= position %>
+              </div>
+            </div>
+            <% end %>
           <% end %>
         <% end %>
       </div>
@@ -87,20 +161,21 @@
       <div class="card space-y-2">
         <p class="text-sm font-medium text-slate-600">Diary entries</p>
         <p class="text-4xl font-display font-semibold text-slate-900"><%= @diary_count %></p>
-        <p class="text-slate-600">Total movies you have logged so far.</p>
+        <p class="text-slate-600">Total movies <%= @viewing_own_profile ? "you have" : "#{@user.username} has" %> logged so far.</p>
       </div>
       <div class="card space-y-2">
         <p class="text-sm font-medium text-slate-600">This year</p>
         <p class="text-4xl font-display font-semibold text-slate-900"><%= @yearly_movies_logged %></p>
-        <p class="text-slate-600">Movies added to your diary in <%= Date.current.year %>.</p>
+        <p class="text-slate-600">Movies added to <%= @viewing_own_profile ? "your" : "their" %> diary in <%= Date.current.year %>.</p>
       </div>
       <div class="card space-y-2">
         <p class="text-sm font-medium text-slate-600">Average rating</p>
         <p class="text-4xl font-display font-semibold text-slate-900"><%= @average_rating.present? ? sprintf("%.1f", @average_rating) : "-" %></p>
-        <p class="text-slate-600">Across your ratings and diary entries.</p>
+        <p class="text-slate-600">Across <%= @viewing_own_profile ? "your" : "their" %> ratings and diary entries.</p>
       </div>
     </section>
 
+    <% if @viewing_own_profile %>
     <section class="card space-y-4">
       <div class="flex items-center justify-between">
         <div>
@@ -118,6 +193,7 @@
         <p class="text-xs text-slate-600">We will skip any movies you've already logged on the same date and mark repeat watches as rewatches.</p>
       <% end %>
     </section>
+    <% end %>
 
     <section class="grid gap-6 md:grid-cols-2">
       <div class="card space-y-4">
@@ -200,5 +276,6 @@
         ></canvas>
       </div>
     </section>
+    <% end %>
   </div>
 </main>

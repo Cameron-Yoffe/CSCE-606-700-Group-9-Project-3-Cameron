@@ -1,26 +1,71 @@
 class ProfilesController < ApplicationController
   before_action :require_login
+  before_action :set_user, only: %i[followers following]
 
   def show
+    # If viewing another user's profile
+    if params[:id].present?
+      @user = User.find(params[:id])
+      @viewing_own_profile = @user == current_user
+      @is_private_and_not_following = @user.is_private? && !current_user.following?(@user) && @user != current_user
+    else
+      @user = current_user
+      @viewing_own_profile = true
+      @is_private_and_not_following = false
+    end
+
+    # Load follow status for other users
+    unless @viewing_own_profile
+      @follow_status = current_user.follow_status(@user)
+      @follow = current_user.active_follows.find_by(followed: @user)
+    end
+
+    # Load follower/following counts
+    @followers_count = @user.followers.count
+    @following_count = @user.following.count
+
+    # Only load full profile data if viewing own profile or public/following
+    unless @is_private_and_not_following
+      @diary_entries = @user.diary_entries.includes(:movie)
+
+      @diary_count = @diary_entries.count
+      @yearly_movies_logged = yearly_diary_entries.count
+      @average_rating = calculate_average_rating
+
+      @favorite_genres = top_genres
+      @favorite_directors = top_directors
+
+      @max_genre_count = @favorite_genres.map(&:last).max.to_i
+      @max_director_count = @favorite_directors.map(&:last).max.to_i
+
+      @monthly_chart_data = build_monthly_chart_data
+      @genre_chart_data = build_genre_chart_data
+
+      # Load top 5 movies
+      @top_movies = @user.top_movies.includes(:movie)
+      @available_favorites = @user.favorites.regular_favorites.includes(:movie).order(created_at: :desc) if @viewing_own_profile
+    end
+  end
+
+  def followers
+    @followers = @user.followers.order(:username)
+  end
+
+  def following
+    @following = @user.following.order(:username)
+  end
+
+  def edit
     @user = current_user
-    @diary_entries = @user.diary_entries.includes(:movie)
+  end
 
-    @diary_count = @diary_entries.count
-    @yearly_movies_logged = yearly_diary_entries.count
-    @average_rating = calculate_average_rating
-
-    @favorite_genres = top_genres
-    @favorite_directors = top_directors
-
-    @max_genre_count = @favorite_genres.map(&:last).max.to_i
-    @max_director_count = @favorite_directors.map(&:last).max.to_i
-
-    @monthly_chart_data = build_monthly_chart_data
-    @genre_chart_data = build_genre_chart_data
-
-    # Load top 5 movies
-    @top_movies = @user.top_movies.includes(:movie)
-    @available_favorites = @user.favorites.regular_favorites.includes(:movie).order(created_at: :desc)
+  def update
+    @user = current_user
+    if @user.update(user_params)
+      redirect_to profile_path, notice: "Profile updated successfully"
+    else
+      render :edit, status: :unprocessable_entity
+    end
   end
 
   def import_letterboxd
@@ -38,12 +83,16 @@ class ProfilesController < ApplicationController
 
   private
 
+  def set_user
+    @user = params[:id] ? User.find(params[:id]) : current_user
+  end
+
   def require_login
     redirect_to sign_up_path, alert: "You must be logged in" unless logged_in?
   end
 
   def user_params
-    params.require(:user).permit(:first_name, :last_name, :bio, :profile_image_url, :top_5_movies)
+    params.require(:user).permit(:first_name, :last_name, :bio, :profile_image_url, :top_5_movies, :is_private)
   end
 
   def yearly_diary_entries
