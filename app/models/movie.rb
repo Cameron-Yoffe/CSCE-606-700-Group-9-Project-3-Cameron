@@ -38,4 +38,40 @@ class Movie < ApplicationRecord
       end
     end
   end
+
+  # Returns the poster URL, fetching from TMDB if missing and tmdb_id is available
+  def poster_image_url(size: "w342")
+    # If we have a poster_url, return it (will be validated on display)
+    return poster_url if poster_url.present?
+
+    # Try to fetch from TMDB if we have a tmdb_id
+    if tmdb_id.present?
+      fetch_poster_from_tmdb(size)
+    else
+      nil
+    end
+  end
+
+  # Force refresh the poster URL from TMDB
+  def refresh_poster_url!(size: "w500")
+    return nil unless tmdb_id.present?
+
+    fetch_poster_from_tmdb(size)
+  end
+
+  private
+
+  def fetch_poster_from_tmdb(size = "w342")
+    client = Tmdb::Client.new
+    movie_data = client.movie(tmdb_id)
+
+    if movie_data["poster_path"].present?
+      new_poster_url = "https://image.tmdb.org/t/p/#{size}#{movie_data["poster_path"]}"
+      update_column(:poster_url, new_poster_url)
+      new_poster_url
+    end
+  rescue Tmdb::Error => e
+    Rails.logger.warn("Failed to fetch poster for movie #{id} (tmdb_id: #{tmdb_id}): #{e.message}")
+    nil
+  end
 end
