@@ -122,7 +122,7 @@ RSpec.describe RegistrationsController, type: :request do
       it 'renders the form with errors' do
         attrs = valid_attributes.merge(email: 'invalid-email')
         post sign_up_path, params: { user: attrs }
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
         expect(response).to render_template(:new)
         expect(assigns(:user).errors).to be_present
       end

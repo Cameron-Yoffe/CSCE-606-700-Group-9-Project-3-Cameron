@@ -27,10 +27,11 @@ class DiaryEntriesController < ApplicationController
     @diary_entry.movie = movie
 
     if @diary_entry.save
+      remove_from_watchlist(movie)
       redirect_to diary_entries_path, notice: "Diary entry created successfully"
     else
       @movie = movie
-      render :new, status: :unprocessable_entity
+      render :new, status: :unprocessable_content
     end
   end
 
@@ -43,7 +44,7 @@ class DiaryEntriesController < ApplicationController
       redirect_to diary_entries_path, notice: "Diary entry updated successfully"
     else
       @movie = @diary_entry.movie
-      render :edit, status: :unprocessable_entity
+      render :edit, status: :unprocessable_content
     end
   end
 
@@ -66,5 +67,9 @@ class DiaryEntriesController < ApplicationController
 
   def require_login
     redirect_to sign_in_path, alert: "You must be logged in" unless logged_in?
+  end
+
+  def remove_from_watchlist(movie)
+    current_user.watchlists.where(movie_id: movie.id).destroy_all
   end
 end

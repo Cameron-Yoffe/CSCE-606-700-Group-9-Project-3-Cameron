@@ -17,10 +17,12 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_02_075743) do
     t.string "mood"
     t.integer "movie_id", null: false
     t.integer "rating", default: 0
+    t.boolean "rewatch", default: false, null: false
     t.datetime "updated_at", null: false
     t.integer "user_id", null: false
     t.date "watched_date"
     t.index ["movie_id"], name: "index_diary_entries_on_movie_id"
+    t.index ["rewatch"], name: "index_diary_entries_on_rewatch"
     t.index ["user_id", "movie_id"], name: "index_diary_entries_on_user_id_and_movie_id"
     t.index ["user_id", "watched_date"], name: "index_diary_entries_on_user_id_and_watched_date"
     t.index ["user_id"], name: "index_diary_entries_on_user_id"
@@ -55,7 +57,9 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_02_075743) do
     t.datetime "created_at", null: false
     t.text "description"
     t.string "director"
+    t.json "embedding", default: {}, null: false
     t.text "genres", default: "[]"
+    t.json "movie_embedding", default: {}, null: false
     t.string "poster_url"
     t.date "release_date"
     t.integer "runtime"
@@ -64,6 +68,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_02_075743) do
     t.datetime "updated_at", null: false
     t.float "vote_average"
     t.integer "vote_count"
+    t.index ["embedding"], name: "index_movies_on_embedding"
     t.index ["release_date"], name: "index_movies_on_release_date"
     t.index ["title"], name: "index_movies_on_title"
     t.index ["tmdb_id"], name: "index_movies_on_tmdb_id", unique: true
@@ -109,15 +114,19 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_02_075743) do
     t.text "bio"
     t.datetime "created_at", null: false
     t.string "email", null: false
+    t.json "embedding", default: {}, null: false
     t.string "first_name"
     t.string "last_name"
     t.string "password_digest", null: false
     t.string "profile_image_url"
     t.string "provider"
+    t.text "top_5_movies"
     t.string "uid"
     t.datetime "updated_at", null: false
+    t.json "user_embedding", default: {}, null: false
     t.string "username", null: false
     t.index ["email"], name: "index_users_on_email", unique: true
+    t.index ["embedding"], name: "index_users_on_embedding"
     t.index ["provider"], name: "index_users_on_provider"
     t.index ["uid"], name: "index_users_on_uid"
     t.index ["username"], name: "index_users_on_username", unique: true

@@ -8,7 +8,7 @@ class TagsController < ApplicationController
 
     unless tag_id.present?
       respond_to do |format|
-        format.json { render json: { success: false, errors: [ "Tag ID is required" ] }, status: :unprocessable_entity }
+        format.json { render json: { success: false, errors: [ "Tag ID is required" ] }, status: :unprocessable_content }
         format.html { redirect_back fallback_location: movie_path(movie.tmdb_id), alert: "Tag is required." }
       end
       return
@@ -19,7 +19,7 @@ class TagsController < ApplicationController
     # Check if tag is already associated with the movie
     if movie.tags.exists?(tag.id)
       respond_to do |format|
-        format.json { render json: { success: false, errors: [ "Tag already added" ] }, status: :unprocessable_entity }
+        format.json { render json: { success: false, errors: [ "Tag already added" ] }, status: :unprocessable_content }
         format.html { redirect_back fallback_location: movie_path(movie.tmdb_id), alert: "Tag already added to this movie." }
       end
       return
@@ -32,7 +32,7 @@ class TagsController < ApplicationController
       end
     else
       respond_to do |format|
-        format.json { render json: { success: false, errors: [ "Could not add tag" ] }, status: :unprocessable_entity }
+        format.json { render json: { success: false, errors: [ "Could not add tag" ] }, status: :unprocessable_content }
         format.html { redirect_back fallback_location: movie_path(movie.tmdb_id), alert: "Could not add tag." }
       end
     end
@@ -56,7 +56,7 @@ class TagsController < ApplicationController
       error_message = tag_exists ? "Tag is not associated with this movie" : "Tag does not exist"
 
       respond_to do |format|
-        format.json { render json: { success: false, errors: [ error_message ] }, status: :unprocessable_entity }
+        format.json { render json: { success: false, errors: [ error_message ] }, status: :unprocessable_content }
         format.html { redirect_back fallback_location: movie_path(movie.tmdb_id), alert: error_message }
       end
     end

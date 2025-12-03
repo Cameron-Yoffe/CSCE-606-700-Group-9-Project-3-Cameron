@@ -23,10 +23,27 @@ class ProfilesController < ApplicationController
     @available_favorites = @user.favorites.regular_favorites.includes(:movie).order(created_at: :desc)
   end
 
+  def import_letterboxd
+    upload = params[:letterboxd_file]
+
+    unless upload.respond_to?(:read) && upload.respond_to?(:size) && upload.size.to_i.positive?
+      return redirect_to profile_path, alert: "Please attach your Letterboxd CSV export before importing."
+    end
+
+    file_content = upload.read
+    LetterboxdImportJob.perform_later(current_user.id, file_content)
+
+    redirect_to profile_path, notice: "Import started. Your diary will update shortly once processing finishes."
+  end
+
   private
 
   def require_login
     redirect_to sign_up_path, alert: "You must be logged in" unless logged_in?
+  end
+
+  def user_params
+    params.require(:user).permit(:first_name, :last_name, :bio, :profile_image_url, :top_5_movies)
   end
 
   def yearly_diary_entries
