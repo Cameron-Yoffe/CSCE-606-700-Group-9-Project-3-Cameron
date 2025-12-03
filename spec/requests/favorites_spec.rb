@@ -63,7 +63,7 @@ RSpec.describe "Favorites", type: :request do
     it "handles favorite save failure" do
       allow_any_instance_of(Favorite).to receive(:save).and_return(false)
       allow_any_instance_of(Favorite).to receive(:persisted?).and_return(false)
-      allow_any_instance_of(ActiveModel::Errors).to receive(:full_messages).and_return(["Error message"])
+      allow_any_instance_of(ActiveModel::Errors).to receive(:full_messages).and_return([ "Error message" ])
 
       post favorites_path, params: { movie_id: movie.id }
       expect(response).to redirect_to(movies_path)
@@ -73,7 +73,7 @@ RSpec.describe "Favorites", type: :request do
     it "handles favorite save failure with JSON" do
       allow_any_instance_of(Favorite).to receive(:save).and_return(false)
       allow_any_instance_of(Favorite).to receive(:persisted?).and_return(false)
-      allow_any_instance_of(ActiveModel::Errors).to receive(:full_messages).and_return(["Error message"])
+      allow_any_instance_of(ActiveModel::Errors).to receive(:full_messages).and_return([ "Error message" ])
 
       post favorites_path, params: { movie_id: movie.id }, as: :json
       expect(response).to have_http_status(:unprocessable_entity)
@@ -169,7 +169,7 @@ RSpec.describe "Favorites", type: :request do
     context "when update fails" do
       it "returns error" do
         allow_any_instance_of(Favorite).to receive(:update).and_return(false)
-        allow_any_instance_of(ActiveModel::Errors).to receive(:full_messages).and_return(["Update failed"])
+        allow_any_instance_of(ActiveModel::Errors).to receive(:full_messages).and_return([ "Update failed" ])
 
         patch set_top_position_favorite_path(favorite), params: { position: 1 }, as: :json
         expect(response).to have_http_status(:unprocessable_entity)
@@ -206,7 +206,7 @@ RSpec.describe "Favorites", type: :request do
     context "when update fails" do
       it "returns error" do
         allow_any_instance_of(Favorite).to receive(:update).and_return(false)
-        allow_any_instance_of(ActiveModel::Errors).to receive(:full_messages).and_return(["Update failed"])
+        allow_any_instance_of(ActiveModel::Errors).to receive(:full_messages).and_return([ "Update failed" ])
 
         delete remove_top_position_favorite_path(favorite), as: :json
         expect(response).to have_http_status(:unprocessable_entity)
