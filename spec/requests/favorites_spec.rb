@@ -41,6 +41,45 @@ RSpec.describe "Favorites", type: :request do
       expect(response).to redirect_to(movies_path)
       expect(flash[:alert]).to eq("Movie not found")
     end
+
+    it "returns JSON error when movie is missing" do
+      post favorites_path, as: :json
+      expect(response).to have_http_status(:not_found)
+      json = JSON.parse(response.body)
+      expect(json["error"]).to eq("Movie not found")
+    end
+
+    it "creates a new movie from tmdb_id" do
+      expect {
+        post favorites_path, params: { tmdb_id: 12345, title: "New Movie", poster_url: "http://example.com/poster.jpg" }
+      }.to change { Movie.count }.by(1).and change { user.favorites.count }.by(1)
+
+      movie = Movie.last
+      expect(movie.tmdb_id).to eq(12345)
+      expect(movie.title).to eq("New Movie")
+      expect(movie.poster_url).to eq("http://example.com/poster.jpg")
+    end
+
+    it "handles favorite save failure" do
+      allow_any_instance_of(Favorite).to receive(:save).and_return(false)
+      allow_any_instance_of(Favorite).to receive(:persisted?).and_return(false)
+      allow_any_instance_of(ActiveModel::Errors).to receive(:full_messages).and_return(["Error message"])
+
+      post favorites_path, params: { movie_id: movie.id }
+      expect(response).to redirect_to(movies_path)
+      expect(flash[:alert]).to eq("Error message")
+    end
+
+    it "handles favorite save failure with JSON" do
+      allow_any_instance_of(Favorite).to receive(:save).and_return(false)
+      allow_any_instance_of(Favorite).to receive(:persisted?).and_return(false)
+      allow_any_instance_of(ActiveModel::Errors).to receive(:full_messages).and_return(["Error message"])
+
+      post favorites_path, params: { movie_id: movie.id }, as: :json
+      expect(response).to have_http_status(:unprocessable_entity)
+      json = JSON.parse(response.body)
+      expect(json["error"]).to eq("Error message")
+    end
   end
 
   describe "DELETE /favorites/:id" do
@@ -51,6 +90,13 @@ RSpec.describe "Favorites", type: :request do
       expect {
         delete favorite_path(favorite)
       }.to change { user.favorites.count }.by(-1)
+    end
+
+    it "returns alert when favorite not found" do
+      sign_in(user)
+      delete favorite_path(id: 99999)
+      expect(response).to redirect_to(favorites_path)
+      expect(flash[:alert]).to eq("Favorite not found")
     end
   end
 
@@ -119,6 +165,18 @@ RSpec.describe "Favorites", type: :request do
         expect(response).to have_http_status(:not_found)
       end
     end
+
+    context "when update fails" do
+      it "returns error" do
+        allow_any_instance_of(Favorite).to receive(:update).and_return(false)
+        allow_any_instance_of(ActiveModel::Errors).to receive(:full_messages).and_return(["Update failed"])
+
+        patch set_top_position_favorite_path(favorite), params: { position: 1 }, as: :json
+        expect(response).to have_http_status(:unprocessable_entity)
+        json = JSON.parse(response.body)
+        expect(json["error"]).to eq("Update failed")
+      end
+    end
   end
 
   describe "DELETE /favorites/:id/remove_top_position" do
@@ -142,6 +200,18 @@ RSpec.describe "Favorites", type: :request do
       it "returns 404" do
         delete remove_top_position_favorite_path(id: 99999), as: :json
         expect(response).to have_http_status(:not_found)
+      end
+    end
+
+    context "when update fails" do
+      it "returns error" do
+        allow_any_instance_of(Favorite).to receive(:update).and_return(false)
+        allow_any_instance_of(ActiveModel::Errors).to receive(:full_messages).and_return(["Update failed"])
+
+        delete remove_top_position_favorite_path(favorite), as: :json
+        expect(response).to have_http_status(:unprocessable_entity)
+        json = JSON.parse(response.body)
+        expect(json["error"]).to eq("Update failed")
       end
     end
   end
