@@ -36,6 +36,7 @@ Rails.application.routes.draw do
     end
     collection do
       patch :mark_all_as_read
+      delete :destroy_all
       get :unread_count
     end
   end

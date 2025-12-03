@@ -28,6 +28,16 @@ class NotificationsController < ApplicationController
     end
   end
 
+  # DELETE /notifications/destroy_all
+  def destroy_all
+    current_user.notifications.destroy_all
+
+    respond_to do |format|
+      format.html { redirect_to notifications_path, notice: "All notifications deleted" }
+      format.json { render json: { message: "All notifications deleted" }, status: :ok }
+    end
+  end
+
   # GET /notifications/unread_count
   def unread_count
     render json: { count: current_user.unread_notifications_count }
