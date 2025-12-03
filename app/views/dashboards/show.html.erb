@@ -118,15 +118,28 @@
 
                   <% if activity.is_a?(Rating) %>
                     <div class="mt-2 flex items-center gap-1">
-                      <% (activity.value / 2).times do %>
-                        <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                        </svg>
-                      <% end %>
-                      <% (5 - activity.value / 2).times do %>
-                        <svg class="w-4 h-4 text-slate-300" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                        </svg>
+                      <% rating_value = activity.value || 0 %>
+                      <% (1..5).each do |star| %>
+                        <% full_value = star * 2 %>
+                        <% half_value = star * 2 - 1 %>
+                        <% if rating_value >= full_value %>
+                          <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                          </svg>
+                        <% elsif rating_value == half_value %>
+                          <div class="relative w-4 h-4">
+                            <svg class="absolute w-4 h-4 text-slate-300" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                            </svg>
+                            <svg class="absolute w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20" style="clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);">
+                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                            </svg>
+                          </div>
+                        <% else %>
+                          <svg class="w-4 h-4 text-slate-300" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                          </svg>
+                        <% end %>
                       <% end %>
                       <span class="ml-1 text-sm text-slate-500"><%= activity.value %>/10</span>
                     </div>
@@ -184,7 +197,7 @@
         <div class="grid grid-cols-2 gap-4">
           <%= link_to user_followers_path(current_user), class: "text-center p-3 bg-neutral-50 rounded-lg hover:bg-brand-50 hover:ring-1 hover:ring-brand-200 transition" do %>
             <p class="text-2xl font-bold text-brand-600"><%= current_user.followers.count %></p>
-            <p class="text-sm text-slate-500">Followers</p>
+            <p class="text-sm text-slate-500"><%= "Follower".pluralize(current_user.followers.count) %></p>
           <% end %>
           <%= link_to user_following_path(current_user), class: "text-center p-3 bg-neutral-50 rounded-lg hover:bg-brand-50 hover:ring-1 hover:ring-brand-200 transition" do %>
             <p class="text-2xl font-bold text-brand-600"><%= current_user.following.count %></p>
@@ -192,11 +205,11 @@
           <% end %>
           <%= link_to favorites_path, class: "text-center p-3 bg-neutral-50 rounded-lg hover:bg-indigo-50 hover:ring-1 hover:ring-indigo-200 transition" do %>
             <p class="text-2xl font-bold text-indigo-600"><%= current_user.favorites.count %></p>
-            <p class="text-sm text-slate-500">Favorites</p>
+            <p class="text-sm text-slate-500"><%= "Favorite".pluralize(current_user.favorites.count) %></p>
           <% end %>
           <%= link_to diary_entries_path, class: "text-center p-3 bg-neutral-50 rounded-lg hover:bg-indigo-50 hover:ring-1 hover:ring-indigo-200 transition" do %>
             <p class="text-2xl font-bold text-indigo-600"><%= current_user.diary_entries.count %></p>
-            <p class="text-sm text-slate-500">Diary Entries</p>
+            <p class="text-sm text-slate-500"><%= "Diary Entry".pluralize(current_user.diary_entries.count) %></p>
           <% end %>
         </div>
       </section>

@@ -2,48 +2,48 @@
   <% user_reactions = logged_in? ? current_user.review_reactions.where(rating: user_rating).index_by(&:emoji) : {} %>
   
   <% if logged_in? %>
-    <div class="relative inline-block" id="emoji-picker-<%= user_rating.id %>">
-      <!-- Emoji Reactions Display Row -->
-      <div class="flex items-center gap-2 flex-wrap">
-        <!-- Show existing reactions -->
-        <% ReviewReaction::ALLOWED_EMOJIS.each do |emoji| %>
-          <% count = user_rating.review_reactions.where(emoji: emoji).count %>
-          <% user_has_reacted = user_reactions[emoji].present? %>
-          
-          <% if count > 0 %>
-            <%= form_with url: review_reactions_path, method: :post, local: true, class: "inline", remote: true do |f| %>
-              <%= f.hidden_field :rating_id, value: user_rating.id %>
-              <%= f.hidden_field :emoji, value: emoji %>
-              <button type="submit" class="flex items-center gap-1 px-2 py-1 text-sm transition-all" style="border-radius: 6px; border: <%= user_has_reacted ? '2px solid rgb(59, 130, 246)' : '1px solid rgb(209, 213, 219)' %>; background: rgb(249, 250, 251);" title="<%= emoji %>">
-                <span style="font-size: 1.2em;"><%= emoji %></span>
-                <span class="text-xs font-semibold"><%= count %></span>
-              </button>
-            <% end %>
-          <% end %>
-        <% end %>
+    <!-- Emoji Reactions Display Row -->
+    <div class="flex items-center gap-2 flex-wrap">
+      <!-- Show existing reactions -->
+      <% ReviewReaction::ALLOWED_EMOJIS.each do |emoji| %>
+        <% count = user_rating.review_reactions.where(emoji: emoji).count %>
+        <% user_has_reacted = user_reactions[emoji].present? %>
         
-        <!-- Add emoji button -->
-        <button type="button" class="flex items-center justify-center w-8 h-8 rounded border border-gray-300 bg-gray-50 hover:bg-gray-100 transition-colors" title="Add reaction" onclick="toggleEmojiPicker('<%= user_rating.id %>')">
-          <span style="font-size: 1.2em;">➕</span>
-        </button>
-      </div>
-      
-      <!-- Emoji picker grid (horizontal) -->
-      <div id="emoji-picker-menu-<%= user_rating.id %>" class="fixed bg-white border border-gray-300 rounded-lg shadow-lg p-2 flex gap-1 flex-wrap hidden z-[9999]" style="width: 350px;">
-        <% ReviewReaction::ALLOWED_EMOJIS.each do |emoji| %>
-          <% user_has_reacted = user_reactions[emoji].present? %>
-          <% count = user_rating.review_reactions.where(emoji: emoji).count %>
-          <%= form_with url: review_reactions_path, method: :post, local: true, class: "inline", remote: true do |f| %>
+        <% if count > 0 %>
+          <%= form_with url: review_reactions_path, method: :post, local: true, class: "inline" do |f| %>
             <%= f.hidden_field :rating_id, value: user_rating.id %>
             <%= f.hidden_field :emoji, value: emoji %>
-            <button type="submit" class="flex items-center justify-center gap-0.5 px-3 py-1 w-16 rounded <%= user_has_reacted ? 'bg-gray-50 border-2 border-blue-400' : 'border border-gray-300' %> hover:bg-gray-100 transition-colors" title="<%= emoji %>" style="font-size: 1.5em; min-width: 60px;">
-              <%= emoji %>
-              <% if count > 0 %>
-                <span class="text-xs font-semibold text-gray-600"><%= count %></span>
-              <% end %>
+            <button type="submit" class="flex items-center gap-1 px-2 py-1 text-sm transition-all" style="border-radius: 6px; border: <%= user_has_reacted ? '2px solid rgb(59, 130, 246)' : '1px solid rgb(209, 213, 219)' %>; background: rgb(249, 250, 251);" title="<%= emoji %>">
+              <span style="font-size: 1.2em;"><%= emoji %></span>
+              <span class="text-xs font-semibold"><%= count %></span>
             </button>
           <% end %>
         <% end %>
+      <% end %>
+      
+      <!-- Add emoji button wrapper for relative positioning -->
+      <div class="relative inline-block">
+        <button type="button" class="emoji-picker-toggle flex items-center justify-center w-8 h-8 rounded border border-gray-300 bg-gray-50 hover:bg-gray-100 transition-colors" title="Add reaction" data-rating-id="<%= user_rating.id %>">
+          <span style="font-size: 1.2em;">➕</span>
+        </button>
+        
+        <!-- Emoji picker grid (horizontal) - positioned absolutely relative to button wrapper -->
+        <div id="emoji-picker-menu-<%= user_rating.id %>" class="absolute left-0 top-full mt-2 bg-white border border-gray-300 rounded-lg shadow-lg p-2 flex gap-1 flex-wrap hidden z-[9999]" style="width: 350px;">
+          <% ReviewReaction::ALLOWED_EMOJIS.each do |emoji| %>
+            <% user_has_reacted = user_reactions[emoji].present? %>
+            <% count = user_rating.review_reactions.where(emoji: emoji).count %>
+            <%= form_with url: review_reactions_path, method: :post, local: true, class: "inline" do |f| %>
+              <%= f.hidden_field :rating_id, value: user_rating.id %>
+              <%= f.hidden_field :emoji, value: emoji %>
+              <button type="submit" class="flex items-center justify-center gap-0.5 px-3 py-1 w-16 rounded <%= user_has_reacted ? 'bg-gray-50 border-2 border-blue-400' : 'border border-gray-300' %> hover:bg-gray-100 transition-colors" title="<%= emoji %>" style="font-size: 1.5em; min-width: 60px;">
+                <%= emoji %>
+                <% if count > 0 %>
+                  <span class="text-xs font-semibold text-gray-600"><%= count %></span>
+                <% end %>
+              </button>
+            <% end %>
+          <% end %>
+        </div>
       </div>
     </div>
   <% else %>
@@ -61,35 +61,4 @@
     </div>
   <% end %>
 </div>
-
-<script>
-  function toggleEmojiPicker(ratingId) {
-    const menu = document.getElementById(`emoji-picker-menu-${ratingId}`);
-    const button = event.target.closest('button');
-    
-    if (menu.classList.contains('hidden')) {
-      const rect = button.getBoundingClientRect();
-      menu.style.top = (rect.bottom + 8) + 'px';
-      menu.style.left = rect.left + 'px';
-      menu.classList.remove('hidden');
-    } else {
-      menu.classList.add('hidden');
-    }
-  }
-  
-  // Close emoji picker when clicking outside
-  document.addEventListener('click', function(event) {
-    const emojiMenus = document.querySelectorAll('[id^="emoji-picker-menu-"]');
-    emojiMenus.forEach(menu => {
-      if (!menu.classList.contains('hidden')) {
-        const isClickInsideMenu = menu.contains(event.target);
-        const isClickOnPlusButton = event.target.closest('button[onclick*="toggleEmojiPicker"]');
-        
-        if (!isClickInsideMenu && !isClickOnPlusButton) {
-          menu.classList.add('hidden');
-        }
-      }
-    });
-  });
-</script>
 
