@@ -49,6 +49,31 @@ RSpec.describe "Tags", type: :request do
       body = JSON.parse(response.body)
       expect(body["errors"]).to include("Tag already added")
     end
+
+    context "when movie_tag creation fails" do
+      before { sign_in(user) }
+
+      it "returns error with JSON format" do
+        # Mock the movie_tags association to fail on create
+        allow_any_instance_of(ActiveRecord::Associations::CollectionProxy).to receive(:create).and_return(false)
+
+        post movie_tags_path(movie), params: { tag_id: tag.id }, headers: { "ACCEPT" => "application/json" }
+
+        expect(response).to have_http_status(:unprocessable_content)
+        body = JSON.parse(response.body)
+        expect(body["errors"]).to include("Could not add tag")
+      end
+
+      it "redirects with alert for HTML format" do
+        # Mock the movie_tags association to fail on create
+        allow_any_instance_of(ActiveRecord::Associations::CollectionProxy).to receive(:create).and_return(false)
+
+        post movie_tags_path(movie), params: { tag_id: tag.id }
+
+        expect(response).to redirect_to(movie_path(movie.tmdb_id))
+        expect(flash[:alert]).to eq("Could not add tag.")
+      end
+    end
   end
 
   describe "DELETE /movies/:movie_id/tags/:id" do
