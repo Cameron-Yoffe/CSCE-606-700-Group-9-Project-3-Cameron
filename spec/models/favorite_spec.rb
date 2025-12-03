@@ -14,7 +14,7 @@ RSpec.describe Favorite, type: :model do
 
     it { should validate_presence_of(:user_id) }
     it { should validate_presence_of(:movie_id) }
-    
+
     it 'validates uniqueness of user_id scoped to movie_id' do
       create(:favorite, user: user, movie: movie)
       duplicate = build(:favorite, user: user, movie: movie)
@@ -71,7 +71,7 @@ RSpec.describe Favorite, type: :model do
     describe '.top_movies' do
       it 'returns favorites with top_position in order' do
         result = user.favorites.top_movies
-        expect(result).to eq([top_favorite_1, top_favorite_3])
+        expect(result).to eq([ top_favorite_1, top_favorite_3 ])
       end
 
       it 'excludes favorites without top_position' do
@@ -83,7 +83,7 @@ RSpec.describe Favorite, type: :model do
     describe '.regular_favorites' do
       it 'returns favorites without top_position' do
         result = user.favorites.regular_favorites
-        expect(result).to eq([regular_favorite])
+        expect(result).to eq([ regular_favorite ])
       end
 
       it 'excludes favorites with top_position' do
