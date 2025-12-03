@@ -103,7 +103,7 @@ GEM
       bigdecimal
       rexml
     crass (1.0.6)
-    csv (3.3.2)
+    csv (3.3.5)
     cucumber (10.1.1)
       base64 (~> 0.2)
       builder (~> 3.2)
@@ -489,7 +489,7 @@ DEPENDENCIES
   bootsnap
   brakeman
   capybara
-  csv (~> 3.2)
+  csv (~> 3.3)
   cucumber-rails
   database_cleaner-active_record
   debug
