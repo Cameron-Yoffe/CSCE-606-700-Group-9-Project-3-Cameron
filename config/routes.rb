@@ -30,8 +30,7 @@ Rails.application.routes.draw do
   get "dashboard", to: "dashboards#show"
   get "profile", to: "profiles#show"
   post "profile/import_letterboxd", to: "profiles#import_letterboxd", as: :profile_import_letterboxd
-  get "profile/edit", to: "profiles#edit"
-  patch "profile", to: "profiles#update"
+  post "profile/import_letterboxd_ratings", to: "profiles#import_letterboxd_ratings", as: :profile_import_letterboxd_ratings
 
   # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
   # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
