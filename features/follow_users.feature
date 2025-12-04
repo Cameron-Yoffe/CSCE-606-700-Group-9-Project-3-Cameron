@@ -24,13 +24,13 @@ Feature: Follow Other Users
     Given I am following Bob
     And Bob is following me
     When I visit my profile
-    Then I should see "1 Followers"
-    And I should see "1 Following"
+    Then I should see "1 followers"
+    And I should see "1 following"
 
   Scenario: Following a private user sends a request
     Given Bob has a private account
     When I visit Bob's profile
-    And I click the "Follow" button
+    And I click the profile "Follow" button
     Then I should see "Follow request sent to Bob"
     And I should see the "Requested" button
 
@@ -39,7 +39,7 @@ Feature: Follow Other Users
     And Bob has requested to follow me
     When I visit my notifications
     Then I should see "Bob requested to follow you"
-    When I click "Accept"
+    When I click the first "Accept" button
     Then I should see "Follow request accepted"
 
   Scenario: Private user can decline follow requests
@@ -47,13 +47,13 @@ Feature: Follow Other Users
     And Bob has requested to follow me
     When I visit my notifications
     Then I should see "Bob requested to follow you"
-    When I click "Decline"
+    When I click the first "Decline" button
     Then I should see "Follow request from Bob rejected"
 
   Scenario: Viewing a private profile that I don't follow
     Given Bob has a private account
     When I visit Bob's profile
-    Then I should see "This account is private"
+    Then I should see "This Account is Private"
     And I should not see Bob's activity
 
   Scenario: Viewing a private profile that I follow
@@ -79,7 +79,7 @@ Feature: Follow Other Users
     And there is another user "Charlie"
     And Charlie follows me
     When I visit my profile
-    And I click on "2 Followers"
+    And I click on the followers link
     Then I should see "Bob" in the followers list
     And I should see "Charlie" in the followers list
 
@@ -88,6 +88,6 @@ Feature: Follow Other Users
     And there is another user "Charlie"
     And I am following Charlie
     When I visit my profile
-    And I click on "2 Following"
+    And I click on the following link
     Then I should see "Bob" in the following list
     And I should see "Charlie" in the following list

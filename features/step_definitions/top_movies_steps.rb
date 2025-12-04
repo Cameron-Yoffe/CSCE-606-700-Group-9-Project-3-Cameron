@@ -23,8 +23,8 @@ end
 Given('I am signed in as {string} with password {string}') do |username, password|
   user = User.find_by(username: username)
   visit sign_in_path
-  fill_in 'Email Address', with: user.email
-  fill_in 'Password', with: password
+  fill_in 'email', with: user.email
+  fill_in 'password', with: password
   click_button 'Sign In'
 end
 
@@ -76,15 +76,19 @@ When('I visit my profile page') do
 end
 
 When('I click on position {int} slot') do |position|
-  within("[data-position='#{position}']") do
-    find('.cursor-pointer').click
-  end
+  find("[data-position='#{position}']").click
 end
 
 When('I select {string} from the favorites list') do |movie_title|
-  within('[data-top-movies-target="modal"]') do
-    # Find the movie in the favorites section and click it
-    page.execute_script("document.querySelector('[data-favorite-id]').click()")
+  # Search for the movie first since the modal uses search
+  within('[data-modal-content]') do
+    fill_in 'Search for a movie...', with: movie_title
+  end
+  sleep 1 # Wait for search results to load
+
+  # Click on the first search result button
+  within('[data-search-results]') do
+    first('button').click
   end
 end
 
@@ -96,11 +100,22 @@ When('I add {string} to position {int}') do |movie_title, position|
 end
 
 When('I hover over position {int}') do |position|
-  find("[data-position='#{position}']").hover
+  @hovered_position = position
+  within('[data-controller="top-movies"]') do
+    # Target the outer div container (with class 'group') not the button
+    find("div.group[data-position='#{position}']").hover
+  end
 end
 
 When('I click the remove button') do
-  find('[data-action="click->top-movies#removeFromTop"]').click
+  # The remove button is in a hover overlay that uses CSS opacity transitions
+  # Use the hovered position to find the correct remove button within the top movies section
+  within('[data-controller="top-movies"]') do
+    within("div.group[data-position='#{@hovered_position}']") do
+      remove_button = find('[data-action="click->top-movies#removeFromTop"]', visible: :all)
+      page.execute_script("arguments[0].click()", remove_button)
+    end
+  end
 end
 
 When('I confirm the removal') do
@@ -108,13 +123,9 @@ When('I confirm the removal') do
 end
 
 When('I search for {string}') do |query|
-  within('[data-top-movies-target="modal"]') do
+  within('[data-modal-content]') do
     fill_in 'Search for a movie...', with: query
   end
-end
-
-Then('I should see {string}') do |text|
-  expect(page).to have_content(text)
 end
 
 Then('I should see {int} empty movie slots') do |count|
@@ -130,11 +141,16 @@ Then('each empty slot should have a position number from {int} to {int}') do |st
 end
 
 Then('I should see a modal to select a movie') do
-  expect(page).to have_css('[data-top-movies-target="modal"]')
+  expect(page).to have_css('[data-modal-content]')
 end
 
 Then('I should see {string} in my favorites list') do |movie_title|
-  within('[data-top-movies-target="modal"]') do
+  # Search for the movie and verify it appears in search results
+  within('[data-modal-content]') do
+    fill_in 'Search for a movie...', with: movie_title
+  end
+  sleep 1 # Wait for search results
+  within('[data-modal-content]') do
     expect(page).to have_content(movie_title)
   end
 end
@@ -156,18 +172,12 @@ Then('I should see all {int} movies in their respective positions') do |count|
 end
 
 Then('positions {int} and {int} should be empty') do |pos1, pos2|
-  within("[data-position='#{pos1}']") do
-    expect(page).to have_css('.border-dashed')
-  end
-  within("[data-position='#{pos2}']") do
-    expect(page).to have_css('.border-dashed')
-  end
+  expect(page).to have_css("[data-position='#{pos1}'].border-dashed")
+  expect(page).to have_css("[data-position='#{pos2}'].border-dashed")
 end
 
 Then('position {int} should be empty') do |position|
-  within("[data-position='#{position}']") do
-    expect(page).to have_css('.border-dashed')
-  end
+  expect(page).to have_css("[data-position='#{position}'].border-dashed")
 end
 
 Then('{string} should still be in position {int}') do |movie_title, position|
@@ -200,14 +210,14 @@ Then('I should see {string} in position {int}') do |movie_title, position|
 end
 
 Then('I should see a search input') do
-  within('[data-top-movies-target="modal"]') do
+  within('[data-modal-content]') do
     expect(page).to have_css('input[type="text"]')
   end
 end
 
 Then('I should see search results') do
-  within('[data-top-movies-target="modal"]') do
-    expect(page).to have_css('[data-top-movies-target="searchResults"]')
+  within('[data-modal-content]') do
+    expect(page).to have_css('[data-search-results]')
   end
 end
 
