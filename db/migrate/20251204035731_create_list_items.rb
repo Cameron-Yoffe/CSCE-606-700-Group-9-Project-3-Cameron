@@ -7,6 +7,6 @@ class CreateListItems < ActiveRecord::Migration[7.1]
       t.timestamps
     end
 
-    add_index :list_items, [:list_id, :movie_id], unique: true
+    add_index :list_items, [ :list_id, :movie_id ], unique: true
   end
 end
