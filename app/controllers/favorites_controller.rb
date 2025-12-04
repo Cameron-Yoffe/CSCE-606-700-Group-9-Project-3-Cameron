@@ -5,6 +5,7 @@ class FavoritesController < ApplicationController
     @favorites = current_user.favorites.includes(:movie).order(created_at: :desc)
     @watchlists = current_user.watchlists.includes(:movie).order(created_at: :desc)
     @top_movies = current_user.top_movies.includes(:movie)
+    @lists = current_user.lists.includes(list_items: :movie).order(created_at: :desc)
   end
 
   def create

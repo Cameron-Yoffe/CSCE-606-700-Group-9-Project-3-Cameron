@@ -15,6 +15,7 @@ Rails.application.routes.draw do
       delete :remove_top_position
     end
   end
+  resources :lists, only: %i[create destroy]
   resources :watchlists, only: %i[create destroy]
   resources :ratings, only: %i[create update destroy]
   resources :review_reactions, only: %i[create]
