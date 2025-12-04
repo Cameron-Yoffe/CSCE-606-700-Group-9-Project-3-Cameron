@@ -32,9 +32,9 @@ export default class extends Controller {
 
     if (this.queue.length === 0) {
       this.cardContainerTarget.innerHTML = `
-        <div class="rounded-3xl border border-slate-800 bg-slate-900/70 p-8 text-center text-white shadow-2xl">
-          <p class="text-2xl font-semibold">You're all caught up!</p>
-          <p class="mt-2 text-slate-300">Come back later for more picks.</p>
+        <div class="card text-center space-y-2">
+          <p class="text-xl font-semibold text-slate-900">You're all caught up!</p>
+          <p class="text-slate-600">Come back later for more picks.</p>
         </div>
       `
       this.setStatus("No more recommendations in this session.")
@@ -47,47 +47,42 @@ export default class extends Controller {
     const poster = movie.poster_url || "https://placehold.co/500x750?text=No+Image"
 
     this.cardContainerTarget.innerHTML = `
-      <div class="relative overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/70 shadow-2xl">
-        <div class="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-transparent to-slate-900/70 pointer-events-none"></div>
-        <div class="grid gap-6 lg:grid-cols-[1fr,1.2fr] items-stretch p-6 lg:p-10">
-          <div class="rounded-2xl overflow-hidden bg-slate-800/70 border border-slate-700 shadow-lg">
-            <img src="${poster}" alt="${this.escapeHtml(movie.title)}" class="w-full h-full object-cover">
+      <div class="overflow-hidden rounded-2xl border border-neutral-100 bg-white shadow-card ring-1 ring-inset ring-neutral-100">
+        <div class="grid gap-6 lg:grid-cols-[1fr,1.1fr] items-stretch">
+          <div class="relative bg-neutral-100">
+            <img src="${poster}" alt="${this.escapeHtml(movie.title)}" class="h-full w-full object-cover">
+            <div class="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/30 to-transparent"></div>
           </div>
-          <div class="flex flex-col justify-between space-y-6">
+          <div class="flex flex-col justify-between gap-6 p-6 lg:p-8">
             <div class="space-y-2">
-              <div class="flex items-center gap-3 text-amber-300 text-sm font-semibold uppercase tracking-[0.15em]">
+              <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-brand-700">
                 <span>Top pick</span>
-                <span class="h-px w-10 bg-amber-400/60"></span>
-                <span class="text-xs text-amber-200">${this.queue.length} in deck</span>
+                <span class="h-px w-10 bg-brand-200"></span>
+                <span class="text-[11px] text-slate-500">${this.queue.length} in deck</span>
               </div>
-              <h2 class="text-3xl lg:text-4xl font-black text-white">${this.escapeHtml(movie.title)}</h2>
-              <p class="text-slate-300 text-lg">${yearDisplay}</p>
+              <h2 class="text-3xl lg:text-4xl font-display font-semibold text-slate-900">${this.escapeHtml(movie.title)}</h2>
+              <p class="text-base text-slate-600">${yearDisplay}</p>
             </div>
 
-            <div class="grid gap-4 sm:grid-cols-2">
-              <div class="rounded-xl bg-slate-800/60 border border-slate-700 p-4">
-                <p class="text-xs uppercase tracking-[0.15em] text-slate-400">Director</p>
-                <p class="text-lg font-semibold text-white mt-1">${this.escapeHtml(movie.director || "Unknown")}</p>
+            <div class="grid gap-3 sm:grid-cols-2">
+              <div class="rounded-xl bg-neutral-50 p-4 ring-1 ring-neutral-100">
+                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Director</p>
+                <p class="mt-1 text-lg font-semibold text-slate-900">${this.escapeHtml(movie.director || "Unknown")}</p>
               </div>
-              <div class="rounded-xl bg-slate-800/60 border border-slate-700 p-4">
-                <p class="text-xs uppercase tracking-[0.15em] text-slate-400">Top Cast</p>
-                <p class="text-lg font-semibold text-white mt-1">${this.escapeHtml(castList)}</p>
+              <div class="rounded-xl bg-neutral-50 p-4 ring-1 ring-neutral-100">
+                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Top Cast</p>
+                <p class="mt-1 text-lg font-semibold text-slate-900">${this.escapeHtml(castList)}</p>
               </div>
             </div>
 
             <div class="flex flex-wrap gap-3">
-              <button class="inline-flex items-center gap-2 rounded-xl border border-slate-700 px-4 py-3 text-slate-200 hover:border-slate-500 hover:text-white transition"
-                      data-action="click->recommendations#ignore">
-                <span class="text-lg">✕</span>
+              <button class="btn btn-secondary" data-action="click->recommendations#ignore">
                 Ignore for now
               </button>
-              <a href="${movie.details_path}" class="inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-5 py-3 text-white font-semibold shadow-lg hover:bg-emerald-600 transition">
-                <span class="text-lg">✓</span>
+              <a href="${movie.details_path}" class="btn btn-primary">
                 View details
               </a>
-              <button class="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-5 py-3 text-white font-semibold shadow-lg hover:bg-amber-600 transition"
-                      data-action="click->recommendations#addToWatchlist">
-                <span class="text-lg">★</span>
+              <button class="btn bg-amber-500 text-white shadow-sm hover:bg-amber-600 focus-visible:outline-amber-500" data-action="click->recommendations#addToWatchlist">
                 Add to watchlist
               </button>
             </div>
@@ -96,7 +91,7 @@ export default class extends Controller {
       </div>
     `
 
-    this.setStatus("Higher scored picks stay on top. Decide what to do with this movie.")
+    this.setStatus("Higher scored picks rise to the top. Decide what to do with this movie.")
   }
 
   ignore(event) {
@@ -158,7 +153,7 @@ export default class extends Controller {
 
     const item = document.createElement("li")
     item.textContent = title
-    item.className = "text-sm text-slate-200 bg-slate-800/70 border border-slate-700 rounded-lg px-3 py-2"
+    item.className = "text-sm text-slate-700 bg-neutral-50 border border-neutral-200 rounded-lg px-3 py-2"
     listTarget.appendChild(item)
   }
 
