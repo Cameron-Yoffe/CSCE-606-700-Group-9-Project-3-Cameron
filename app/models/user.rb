@@ -10,6 +10,8 @@ class User < ApplicationRecord
   has_many :ratings, dependent: :destroy
   has_many :watchlists, dependent: :destroy
   has_many :movies, through: :watchlists
+  has_many :lists, dependent: :destroy
+  has_many :custom_list_movies, through: :lists, source: :movies
   has_many :favorite_movies, through: :favorites, source: :movie
   has_many :review_reactions, dependent: :destroy
   has_many :recommendation_runs, dependent: :destroy

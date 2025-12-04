@@ -5,6 +5,7 @@ class FavoritesController < ApplicationController
     @favorites = current_user.favorites.includes(:movie).order(created_at: :desc)
     @watchlists = current_user.watchlists.includes(:movie).order(created_at: :desc)
     @top_movies = current_user.top_movies.includes(:movie)
+    @lists = current_user.lists.includes(list_items: :movie).order(created_at: :desc)
   end
 
   def create
@@ -28,7 +29,7 @@ class FavoritesController < ApplicationController
     else
       respond_to do |format|
         format.html { redirect_back fallback_location: movies_path, alert: favorite.errors.full_messages.to_sentence }
-        format.json { render json: { error: favorite.errors.full_messages.to_sentence }, status: :unprocessable_entity }
+        format.json { render json: { error: favorite.errors.full_messages.to_sentence }, status: :unprocessable_content }
       end
     end
   end
@@ -55,7 +56,7 @@ class FavoritesController < ApplicationController
     end
 
     unless (1..5).include?(position)
-      render json: { error: "Position must be between 1 and 5" }, status: :unprocessable_entity
+      render json: { error: "Position must be between 1 and 5" }, status: :unprocessable_content
       return
     end
 
@@ -69,7 +70,7 @@ class FavoritesController < ApplicationController
     if favorite.update(top_position: position)
       render json: { success: true, favorite: favorite }
     else
-      render json: { error: favorite.errors.full_messages.to_sentence }, status: :unprocessable_entity
+      render json: { error: favorite.errors.full_messages.to_sentence }, status: :unprocessable_content
     end
   end
 
@@ -84,7 +85,7 @@ class FavoritesController < ApplicationController
     if favorite.update(top_position: nil)
       render json: { success: true }
     else
-      render json: { error: favorite.errors.full_messages.to_sentence }, status: :unprocessable_entity
+      render json: { error: favorite.errors.full_messages.to_sentence }, status: :unprocessable_content
     end
   end
 

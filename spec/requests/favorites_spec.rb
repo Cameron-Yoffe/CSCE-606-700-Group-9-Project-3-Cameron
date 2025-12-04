@@ -76,7 +76,7 @@ RSpec.describe "Favorites", type: :request do
       allow_any_instance_of(ActiveModel::Errors).to receive(:full_messages).and_return([ "Error message" ])
 
       post favorites_path, params: { movie_id: movie.id }, as: :json
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
       json = JSON.parse(response.body)
       expect(json["error"]).to eq("Error message")
     end
@@ -134,14 +134,14 @@ RSpec.describe "Favorites", type: :request do
     context "with invalid position" do
       it "rejects position less than 1" do
         patch set_top_position_favorite_path(favorite), params: { position: 0 }, as: :json
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
         json = JSON.parse(response.body)
         expect(json["error"]).to be_present
       end
 
       it "rejects position greater than 5" do
         patch set_top_position_favorite_path(favorite), params: { position: 6 }, as: :json
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
         json = JSON.parse(response.body)
         expect(json["error"]).to be_present
       end
@@ -172,7 +172,7 @@ RSpec.describe "Favorites", type: :request do
         allow_any_instance_of(ActiveModel::Errors).to receive(:full_messages).and_return([ "Update failed" ])
 
         patch set_top_position_favorite_path(favorite), params: { position: 1 }, as: :json
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
         json = JSON.parse(response.body)
         expect(json["error"]).to eq("Update failed")
       end
@@ -209,7 +209,7 @@ RSpec.describe "Favorites", type: :request do
         allow_any_instance_of(ActiveModel::Errors).to receive(:full_messages).and_return([ "Update failed" ])
 
         delete remove_top_position_favorite_path(favorite), as: :json
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
         json = JSON.parse(response.body)
         expect(json["error"]).to eq("Update failed")
       end

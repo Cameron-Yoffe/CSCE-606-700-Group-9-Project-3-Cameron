@@ -8,7 +8,7 @@ class FollowsController < ApplicationController
     if @user == current_user
       respond_to do |format|
         format.html { redirect_back fallback_location: root_path, alert: "You cannot follow yourself." }
-        format.json { render json: { error: "You cannot follow yourself" }, status: :unprocessable_entity }
+        format.json { render json: { error: "You cannot follow yourself" }, status: :unprocessable_content }
       end
       return
     end
@@ -22,7 +22,7 @@ class FollowsController < ApplicationController
         format.json { render json: { status: follow.status, message: message }, status: :created }
       else
         format.html { redirect_back fallback_location: root_path, alert: "Unable to follow user." }
-        format.json { render json: { error: "Unable to follow user" }, status: :unprocessable_entity }
+        format.json { render json: { error: "Unable to follow user" }, status: :unprocessable_content }
       end
     end
   end

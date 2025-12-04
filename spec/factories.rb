@@ -43,6 +43,24 @@ FactoryBot.define do
     status { "to_watch" }
   end
 
+  factory :list do
+    user { association :user }
+    name { "List #{Faker::Lorem.unique.word}" }
+    description { Faker::Lorem.sentence }
+
+    trait :with_movie do
+      after(:create) do |list|
+        movie = create(:movie)
+        create(:list_item, list: list, movie: movie)
+      end
+    end
+  end
+
+  factory :list_item do
+    list { association :list }
+    movie { association :movie }
+  end
+
   factory :rating do
     user { association :user }
     movie { association :movie }

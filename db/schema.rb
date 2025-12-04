@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_04_012957) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_04_035731) do
   create_table "diary_entries", force: :cascade do |t|
     t.text "content", null: false
     t.datetime "created_at", null: false
@@ -50,6 +50,26 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_04_012957) do
     t.index ["followed_id"], name: "index_follows_on_followed_id"
     t.index ["follower_id", "followed_id"], name: "index_follows_on_follower_id_and_followed_id", unique: true
     t.index ["follower_id"], name: "index_follows_on_follower_id"
+  end
+
+  create_table "list_items", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "list_id", null: false
+    t.integer "movie_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["list_id", "movie_id"], name: "index_list_items_on_list_id_and_movie_id", unique: true
+    t.index ["list_id"], name: "index_list_items_on_list_id"
+    t.index ["movie_id"], name: "index_list_items_on_movie_id"
+  end
+
+  create_table "lists", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
+    t.index ["user_id", "name"], name: "index_lists_on_user_id_and_name"
+    t.index ["user_id"], name: "index_lists_on_user_id"
   end
 
   create_table "movie_tags", force: :cascade do |t|
@@ -190,6 +210,9 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_04_012957) do
   add_foreign_key "favorites", "users"
   add_foreign_key "follows", "users", column: "followed_id"
   add_foreign_key "follows", "users", column: "follower_id"
+  add_foreign_key "list_items", "lists"
+  add_foreign_key "list_items", "movies"
+  add_foreign_key "lists", "users"
   add_foreign_key "movie_tags", "movies"
   add_foreign_key "movie_tags", "tags"
   add_foreign_key "notifications", "users"

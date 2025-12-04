@@ -9,6 +9,8 @@ class Movie < ApplicationRecord
   has_many :ratings, dependent: :destroy
   has_many :watchlists, dependent: :destroy
   has_many :users, through: :watchlists
+  has_many :list_items, dependent: :destroy
+  has_many :lists, through: :list_items
   has_many :movie_tags, dependent: :destroy
   has_many :tags, through: :movie_tags
 
