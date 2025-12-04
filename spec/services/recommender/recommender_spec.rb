@@ -7,14 +7,14 @@ RSpec.describe Recommender::Recommender do
 
       top_pick = create(
         :movie,
-        genres: ["Drama"].to_json,
+        genres: [ "Drama" ].to_json,
         director: "Pat",
         vote_count: 100,
         release_date: Date.new(2020, 1, 1),
       )
       runner_up = create(
         :movie,
-        genres: ["Drama"].to_json,
+        genres: [ "Drama" ].to_json,
         director: "Someone Else",
         vote_count: 100,
         release_date: Date.new(2020, 1, 1),

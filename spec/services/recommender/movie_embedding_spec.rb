@@ -5,9 +5,9 @@ RSpec.describe Recommender::MovieEmbedding do
     it "converts genres, director, cast, and decade into weighted features" do
       movie = create(
         :movie,
-        genres: ["Drama", "Comedy"].to_json,
+        genres: [ "Drama", "Comedy" ].to_json,
         director: "Greta Gerwig",
-        cast: ["Timothée Chalamet", "Saoirse Ronan"].to_json,
+        cast: [ "Timothée Chalamet", "Saoirse Ronan" ].to_json,
         release_date: Date.new(2019, 8, 9),
       )
 

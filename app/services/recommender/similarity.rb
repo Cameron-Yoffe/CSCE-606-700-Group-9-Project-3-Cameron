@@ -6,7 +6,7 @@ module Recommender
       def dot(user_vec, movie_vec)
         return 0.0 if user_vec.blank? || movie_vec.blank?
 
-        smaller, larger = [user_vec, movie_vec].sort_by(&:length)
+        smaller, larger = [ user_vec, movie_vec ].sort_by(&:length)
 
         smaller.sum do |feature, weight|
           weight * (larger[feature] || 0.0)

@@ -5,7 +5,7 @@ module Recommender
       genre: 1.0,
       director: 1.3,
       cast: 0.8,
-      decade: 0.3,
+      decade: 0.3
       # keyword: 0.6,
     }.freeze
 
@@ -16,7 +16,7 @@ module Recommender
       4 => 1.0,
       3 => 0.3,
       2 => 0.0,
-      1 => 0.0,
+      1 => 0.0
     }.freeze
 
     # Treat “seen but unrated” items as a faint signal so they can tilt the profile without changing it too much.

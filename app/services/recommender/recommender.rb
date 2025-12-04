@@ -8,7 +8,7 @@ module Recommender
         candidates = CandidateGenerator.for(user)
         scored = candidates.map do |movie|
           movie_vec = movie.movie_embedding.presence || MovieEmbedding.build_and_persist!(movie)
-          [movie, Similarity.dot(user_vec, movie_vec)]
+          [ movie, Similarity.dot(user_vec, movie_vec) ]
         end
 
         scored

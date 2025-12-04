@@ -47,15 +47,15 @@ module Recommender
 
       def normalize_names(raw_field)
         parsed = case raw_field
-                 when String
+        when String
                    begin
                      JSON.parse(raw_field)
                    rescue JSON::ParserError
                      raw_field.split(",").map(&:strip)
                    end
-                 else
+        else
                    raw_field
-                 end
+        end
 
         Array(parsed).map do |value|
           value.is_a?(Hash) ? (value["name"] || value[:name]) : value
@@ -65,9 +65,9 @@ module Recommender
       def apply_idf!(features, lookup)
         features.keys.each do |feature|
           idf_value = case lookup
-                      when Hash then lookup.fetch(feature, 1.0)
-                      else lookup.respond_to?(:call) ? lookup.call(feature) : 1.0
-                      end
+          when Hash then lookup.fetch(feature, 1.0)
+          else lookup.respond_to?(:call) ? lookup.call(feature) : 1.0
+          end
           features[feature] *= idf_value
         end
       end
