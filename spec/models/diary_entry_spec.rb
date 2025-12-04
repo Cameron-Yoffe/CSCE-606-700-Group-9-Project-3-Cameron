@@ -1,6 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe DiaryEntry, type: :model do
+  include ActiveJob::TestHelper
   describe 'associations' do
     it { should belong_to(:user) }
     it { should belong_to(:movie) }
@@ -45,10 +46,20 @@ RSpec.describe DiaryEntry, type: :model do
   end
 
   describe 'callbacks' do
-    it 'is created with a valid watched_date' do
-      entry = build(:diary_entry)
-      # The factory sets watched_date, so we just verify behavior when created properly
-      expect(entry.watched_date).to be_present
+    before do
+      ActiveJob::Base.queue_adapter = :test
+      clear_enqueued_jobs
+    end
+
+    after { clear_enqueued_jobs }
+
+    it 'enqueues embedding recomputation after commit' do
+      user = create(:user)
+      movie = create(:movie)
+
+      expect do
+        create(:diary_entry, user: user, movie: movie, watched_date: Date.today, content: 'Great movie!')
+      end.to have_enqueued_job(RecomputeUserEmbeddingJob).with(user.id)
     end
   end
 end

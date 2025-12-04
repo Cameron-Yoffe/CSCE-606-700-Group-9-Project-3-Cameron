@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_03_043412) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_04_012957) do
   create_table "diary_entries", force: :cascade do |t|
     t.text "content", null: false
     t.datetime "created_at", null: false
@@ -68,7 +68,9 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_03_043412) do
     t.datetime "created_at", null: false
     t.text "description"
     t.string "director"
+    t.json "embedding", default: {}, null: false
     t.text "genres", default: "[]"
+    t.json "movie_embedding", default: {}, null: false
     t.string "poster_url"
     t.date "release_date"
     t.integer "runtime"
@@ -77,6 +79,8 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_03_043412) do
     t.datetime "updated_at", null: false
     t.float "vote_average"
     t.integer "vote_count"
+    t.index ["embedding"], name: "index_movies_on_embedding"
+    t.index ["movie_embedding"], name: "index_movies_on_movie_embedding"
     t.index ["release_date"], name: "index_movies_on_release_date"
     t.index ["title"], name: "index_movies_on_title"
     t.index ["tmdb_id"], name: "index_movies_on_tmdb_id", unique: true
@@ -110,6 +114,18 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_03_043412) do
     t.index ["value"], name: "index_ratings_on_value"
   end
 
+  create_table "recommendation_runs", force: :cascade do |t|
+    t.datetime "completed_at"
+    t.datetime "created_at", null: false
+    t.text "error_message"
+    t.string "job_id"
+    t.json "movies", default: [], null: false
+    t.string "status", default: "pending", null: false
+    t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
+    t.index ["user_id"], name: "index_recommendation_runs_on_user_id"
+  end
+
   create_table "review_reactions", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "emoji", default: "👍", null: false
@@ -136,6 +152,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_03_043412) do
     t.text "bio"
     t.datetime "created_at", null: false
     t.string "email", null: false
+    t.json "embedding", default: {}, null: false
     t.string "first_name"
     t.boolean "is_private", default: false, null: false
     t.string "last_name"
@@ -145,10 +162,13 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_03_043412) do
     t.text "top_5_movies"
     t.string "uid"
     t.datetime "updated_at", null: false
+    t.json "user_embedding", default: {}, null: false
     t.string "username", null: false
     t.index ["email"], name: "index_users_on_email", unique: true
+    t.index ["embedding"], name: "index_users_on_embedding"
     t.index ["provider"], name: "index_users_on_provider"
     t.index ["uid"], name: "index_users_on_uid"
+    t.index ["user_embedding"], name: "index_users_on_user_embedding"
     t.index ["username"], name: "index_users_on_username", unique: true
   end
 
@@ -175,6 +195,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_03_043412) do
   add_foreign_key "notifications", "users"
   add_foreign_key "ratings", "movies"
   add_foreign_key "ratings", "users"
+  add_foreign_key "recommendation_runs", "users"
   add_foreign_key "review_reactions", "ratings"
   add_foreign_key "review_reactions", "users"
   add_foreign_key "watchlists", "movies"

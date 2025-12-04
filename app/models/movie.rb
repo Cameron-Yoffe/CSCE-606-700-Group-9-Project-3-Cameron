@@ -1,6 +1,8 @@
 require "json"
 
 class Movie < ApplicationRecord
+  attribute :movie_embedding, :json, default: {}
+
   # Associations
   has_many :diary_entries, dependent: :destroy
   has_many :favorites, dependent: :destroy
@@ -57,6 +59,10 @@ class Movie < ApplicationRecord
     return nil unless tmdb_id.present?
 
     fetch_poster_from_tmdb(size)
+  end
+
+  def recompute_embedding!(idf_lookup: nil)
+    Recommender::MovieEmbedding.build_and_persist!(self, idf_lookup: idf_lookup)
   end
 
   private

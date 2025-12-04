@@ -1,0 +1,97 @@
+<main class="min-h-screen bg-neutral-25 px-6 py-12">
+  <div class="mx-auto max-w-6xl space-y-8">
+    <header class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <div class="space-y-2">
+        <p class="text-sm font-semibold uppercase tracking-wide text-brand-700">Recommendations</p>
+        <h1 class="text-4xl md:text-5xl font-display font-semibold text-slate-900">Discover your next watch</h1>
+        <p class="text-lg text-slate-600">Curated picks based on your diary entries and ratings.</p>
+      </div>
+      <div class="flex flex-wrap gap-3">
+        <%= link_to dashboard_path, class: "btn btn-secondary" do %>
+          Back to dashboard
+        <% end %>
+        <%= link_to movies_path, class: "btn btn-primary" do %>
+          Browse library
+        <% end %>
+      </div>
+    </header>
+
+    <div data-controller="recommendations"
+         data-recommendations-movies-value="<%= json_escape(@recommendations.to_json) %>"
+         data-recommendations-watchlists-path-value="<%= watchlists_path %>"
+         data-recommendations-csrf-token-value="<%= form_authenticity_token %>"
+         data-recommendations-status-value="<%= @status %>"
+         data-recommendations-run-id-value="<%= @run&.id %>"
+         data-recommendations-status-url-value="<%= recommendations_status_path(run_id: @run&.id) %>"
+         data-recommendations-refresh-url-value="<%= refresh_recommendations_path %>"
+        class="grid gap-6 lg:grid-cols-[2fr,1fr] items-start">
+      <section class="card space-y-4">
+        <div class="flex items-center justify-between gap-4">
+          <div>
+            <p class="text-sm font-medium text-slate-500">Personalized picks</p>
+            <p class="text-base text-slate-600" data-recommendations-target="statusText">
+              <%= @status == RecommendationRun::STATUSES[:completed] ? "Tap a button to start curating your picks." : "Finding suggestions for you..." %>
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button type="button"
+                    class="btn btn-secondary"
+                    data-action="click->recommendations#reload"
+                    data-recommendations-target="reloadButton">
+              Reload suggestions
+            </button>
+            <span class="rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700 ring-1 ring-inset ring-brand-100" data-recommendations-target="deckCount">
+              <%= @recommendations.size %> in deck
+            </span>
+          </div>
+        </div>
+
+        <div class="relative" data-recommendations-target="cardContainer"></div>
+      </section>
+
+      <div class="space-y-4">
+        <section class="card space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-slate-900">Ignored this session</h3>
+            <div class="flex items-center gap-2">
+              <button type="button"
+                      class="text-xs font-semibold text-brand-700 hover:text-brand-900"
+                      data-action="click->recommendations#toggleAllIgnored"
+                      data-recommendations-target="allIgnoredToggle">
+                View all ignored
+              </button>
+              <span class="text-xs font-semibold text-slate-500" data-recommendations-target="ignoredCount">0</span>
+            </div>
+          </div>
+          <ul class="space-y-2" data-recommendations-target="ignoredList">
+            <li class="text-sm text-slate-600" data-placeholder="true">Nothing ignored yet.</li>
+          </ul>
+        </section>
+
+        <section class="card space-y-3 hidden" data-recommendations-target="allIgnoredSection">
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-slate-900">All ignored titles</h3>
+            <button type="button"
+                    class="text-xs font-semibold text-brand-700 hover:text-brand-900"
+                    data-action="click->recommendations#clearAllIgnored">
+              Clear all
+            </button>
+          </div>
+          <ul class="space-y-2 max-h-64 overflow-auto" data-recommendations-target="allIgnoredList">
+            <li class="text-sm text-slate-600" data-placeholder="true">No ignored titles yet.</li>
+          </ul>
+        </section>
+
+        <section class="card space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-slate-900">Added to watchlist</h3>
+            <span class="text-xs font-semibold text-slate-500" data-recommendations-target="watchlistCount">0</span>
+          </div>
+          <ul class="space-y-2" data-recommendations-target="watchlistList">
+            <li class="text-sm text-slate-600" data-placeholder="true">No new watchlist picks yet.</li>
+          </ul>
+        </section>
+      </div>
+    </div>
+  </div>
+</main>

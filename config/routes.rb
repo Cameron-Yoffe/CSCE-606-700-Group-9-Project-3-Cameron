@@ -19,6 +19,9 @@ Rails.application.routes.draw do
   resources :ratings, only: %i[create update destroy]
   resources :review_reactions, only: %i[create]
   resources :diary_entries
+  get "recommendations", to: "recommendations#show"
+  post "recommendations/refresh", to: "recommendations#refresh", as: :refresh_recommendations
+  get "recommendations/status", to: "recommendations#status", as: :recommendations_status
 
   # Follow system
   resources :follows, only: %i[destroy] do

@@ -1,4 +1,6 @@
 class User < ApplicationRecord
+  attribute :user_embedding, :json, default: {}
+
   # Secure password
   has_secure_password validations: false
 
@@ -10,6 +12,7 @@ class User < ApplicationRecord
   has_many :movies, through: :watchlists
   has_many :favorite_movies, through: :favorites, source: :movie
   has_many :review_reactions, dependent: :destroy
+  has_many :recommendation_runs, dependent: :destroy
   has_many :top_movies, -> { where.not(top_position: nil).order(:top_position) }, class_name: "Favorite"
 
   # Follow associations
@@ -70,6 +73,10 @@ class User < ApplicationRecord
 
   def unread_notifications_count
     notifications.unread.count
+  end
+
+  def recompute_embedding!(decay: true)
+    Recommender::UserEmbedding.build_and_persist!(self, decay: decay)
   end
 
   private
