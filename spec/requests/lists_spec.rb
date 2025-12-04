@@ -21,7 +21,7 @@ RSpec.describe "Lists", type: :request do
       }
 
       expect do
-        post lists_path, params: { list: { name: "Space Epics", description: "My favorite space adventures" }, movies: [movie_params] }
+        post lists_path, params: { list: { name: "Space Epics", description: "My favorite space adventures" }, movies: [ movie_params ] }
       end.to change { user.lists.count }.by(1).and change(ListItem, :count).by(1)
 
       new_list = user.lists.last
@@ -60,7 +60,7 @@ RSpec.describe "Lists", type: :request do
       existing_movie_count = Movie.count
 
       expect do
-        post lists_path, params: { list: { name: "Existing Movie List" }, movies: [{ movie_id: movie.id }] }
+        post lists_path, params: { list: { name: "Existing Movie List" }, movies: [ { movie_id: movie.id } ] }
       end.to change { user.lists.count }.by(1).and change(ListItem, :count).by(1)
 
       created_list = user.lists.last
@@ -74,7 +74,7 @@ RSpec.describe "Lists", type: :request do
       sign_in(user)
 
       expect do
-        post lists_path, params: { list: { name: "No Duplicates" }, movies: [{ movie_id: movie.id }, { movie_id: movie.id }] }
+        post lists_path, params: { list: { name: "No Duplicates" }, movies: [ { movie_id: movie.id }, { movie_id: movie.id } ] }
       end.to change { user.lists.count }.by(1).and change(ListItem, :count).by(1)
 
       created_list = user.lists.last
@@ -92,7 +92,7 @@ RSpec.describe "Lists", type: :request do
       expect do
         post lists_path, params: {
           list: { name: "From TMDB" },
-          movies: [{ tmdb_id: tmdb_id, title: "New TMDB Movie", poster_url: poster_url, release_date: release_date }]
+          movies: [ { tmdb_id: tmdb_id, title: "New TMDB Movie", poster_url: poster_url, release_date: release_date } ]
         }
       end.to change { user.lists.count }.by(1).and change(Movie, :count).by(1).and change(ListItem, :count).by(1)
 
