@@ -3,6 +3,7 @@
   <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-8">
     <h1 class="text-4xl font-bold">Welcome, <%= @user.first_name || @user.username %>!</h1>
     <div class="flex gap-3">
+      <%= link_to "Movie Recommendations", recommendations_path, class: "bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-md shadow" %>
       <%= link_to "Search Movies", movies_path, class: "bg-brand-600 hover:bg-brand-700 text-white font-bold py-2 px-4 rounded-md shadow" %>
       <%= link_to "My Library", favorites_path, class: "bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-md shadow" %>
       <%= link_to "View Profile", profile_path, class: "bg-slate-600 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded-md shadow" %>

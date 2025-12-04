@@ -14,6 +14,9 @@
         </p>
       </div>
       <div class="flex gap-3">
+        <%= link_to recommendations_path, class: "inline-flex items-center px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200" do %>
+          Movie Recommendations
+        <% end %>
         <%= link_to profile_path, class: "inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200" do %>
           View Profile
         <% end %>
@@ -30,9 +33,14 @@
           <h2 class="text-3xl font-black text-white mb-2">Watchlist</h2>
           <p class="text-slate-400">Movies you want to check out soon</p>
         </div>
-        <%= link_to movies_path, class: "inline-flex items-center px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200" do %>
-          Search Movies
-        <% end %>
+        <div class="flex items-center gap-3">
+          <%= link_to recommendations_path, class: "inline-flex items-center px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200" do %>
+            Movie Recommendations
+          <% end %>
+          <%= link_to movies_path, class: "inline-flex items-center px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200" do %>
+            Search Movies
+          <% end %>
+        </div>
       </div>
 
       <% watchlists = @user.watchlists.includes(:movie) %>
