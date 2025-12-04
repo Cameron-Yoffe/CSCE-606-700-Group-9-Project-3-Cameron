@@ -51,7 +51,10 @@ Then('I should see a {string} link') do |link_text|
 end
 
 When('I click on the {string} link') do |link_text|
-  click_link link_text
+  link = first(:link, link_text, exact_text: true)
+  raise "Link with text '#{link_text}' not found" unless link
+
+  link.click
 end
 
 Then('I should be on the library page') do

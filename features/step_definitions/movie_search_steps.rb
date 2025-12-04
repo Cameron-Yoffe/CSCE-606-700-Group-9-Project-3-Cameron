@@ -1,12 +1,11 @@
 # Step definitions for movie search feature
 
 Given('I am a logged in user') do
-  @user = User.create!(
-    email: 'testuser@example.com',
-    username: 'testuser',
-    password: 'ValidPass123',
-    password_confirmation: 'ValidPass123'
-  )
+  @user = User.find_or_initialize_by(email: 'testuser@example.com')
+  @user.username ||= 'testuser'
+  @user.password = 'ValidPass123'
+  @user.password_confirmation = 'ValidPass123'
+  @user.save!
   visit sign_in_path
   fill_in 'Email', with: @user.email
   fill_in 'Password', with: 'ValidPass123'

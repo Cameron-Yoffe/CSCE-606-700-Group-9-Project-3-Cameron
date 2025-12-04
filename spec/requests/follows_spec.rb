@@ -78,7 +78,7 @@ RSpec.describe "Follows", type: :request do
 
       it "returns an error with JSON format" do
         post "/users/#{user.id}/follow", headers: { "Accept" => "application/json" }
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
         body = JSON.parse(response.body)
         expect(body["error"]).to eq("You cannot follow yourself")
       end
@@ -115,7 +115,7 @@ RSpec.describe "Follows", type: :request do
       it "returns error with JSON format" do
         allow_any_instance_of(User).to receive(:follow).and_return(nil)
         post "/users/#{other_user.id}/follow", headers: { "Accept" => "application/json" }
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
         body = JSON.parse(response.body)
         expect(body["error"]).to eq("Unable to follow user")
       end
