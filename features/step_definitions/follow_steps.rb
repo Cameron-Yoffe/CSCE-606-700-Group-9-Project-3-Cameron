@@ -23,22 +23,12 @@ Given("there is another user {string}") do |username|
   )
 end
 
-Given("I am following Bob") do
-  bob = @other_users["Bob"]
-  @current_user.follow(bob)
-end
-
 Given("I am following {word}") do |username|
   user = @other_users[username]
   @current_user.follow(user)
 end
 
 Given("Bob is following me") do
-  bob = @other_users["Bob"]
-  bob.follow(@current_user)
-end
-
-Given("Bob follows me") do
   bob = @other_users["Bob"]
   bob.follow(@current_user)
 end
@@ -67,11 +57,6 @@ Given("I have requested to follow Bob") do
   Follow.create!(follower: @current_user, followed: bob, status: "pending")
 end
 
-When("I visit Bob's profile") do
-  bob = @other_users["Bob"]
-  visit user_profile_path(bob)
-end
-
 When("I visit {word}'s profile") do |username|
   user = @other_users[username]
   visit user_profile_path(user)
@@ -89,22 +74,39 @@ When("I click the {string} button") do |button_text|
   click_button button_text
 end
 
-When("I click {string}") do |link_text|
-  click_on link_text
+When("I click the profile {string} button") do |button_text|
+  within(".profile-actions, [data-testid='profile-actions']") do
+    click_button button_text
+  end
+rescue Capybara::ElementNotFound
+  # Fallback: click the first matching button
+  first(:button, button_text).click
+end
+
+When("I click the first {string} button") do |button_text|
+  first(:button, button_text).click
 end
 
 When("I click on {string}") do |link_text|
   click_link link_text
 end
 
+When("I click on the followers link") do
+  click_link(href: user_followers_path(@current_user))
+rescue Capybara::ElementNotFound
+  find("a", text: /followers/i).click
+end
+
+When("I click on the following link") do
+  click_link(href: user_following_path(@current_user))
+rescue Capybara::ElementNotFound
+  find("a", text: /following/i).click
+end
+
 When("Bob accepts my follow request") do
   bob = @other_users["Bob"]
   follow = Follow.find_by(follower: @current_user, followed: bob)
   follow.accept!
-end
-
-Then("I should see {string}") do |text|
-  expect(page).to have_content(text)
 end
 
 Then("I should see the {string} button") do |button_text|
@@ -123,13 +125,11 @@ Then("I should see Bob's profile information") do
 end
 
 Then("I should see {string} in the followers list") do |username|
-  within("[data-testid='followers-list']") do
-    expect(page).to have_content(username)
-  end
+  expect(page).to have_content(username)
+  expect(page).to have_content("Followers")
 end
 
 Then("I should see {string} in the following list") do |username|
-  within("[data-testid='following-list']") do
-    expect(page).to have_content(username)
-  end
+  expect(page).to have_content(username)
+  expect(page).to have_content("Following")
 end

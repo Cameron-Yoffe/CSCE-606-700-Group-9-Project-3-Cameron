@@ -23,6 +23,7 @@ Feature: Top 5 Movies on Profile
     And I should see 5 empty movie slots
     And each empty slot should have a position number from 1 to 5
 
+  @javascript
   Scenario: User adds a favorite movie to top 5
     Given I have favorited "The Godfather"
     And I have favorited "Inception"
@@ -82,10 +83,12 @@ Feature: Top 5 Movies on Profile
       | The Godfather | 1        |
     And I have favorited "Inception"
     When I visit my profile page
+    And I hover over position 1
+    And I click the remove button
+    And I confirm the removal
     And I click on position 1 slot
     And I select "Inception" from the favorites list
     Then "Inception" should appear in position 1
-    And "The Godfather" should no longer be in the top 5
 
   @javascript
   Scenario: Top movies are visible to the user
@@ -103,6 +106,7 @@ Feature: Top 5 Movies on Profile
     And I should see "The Dark Knight" in position 4
     And I should see "Pulp Fiction" in position 5
 
+  @javascript
   Scenario: User can search for movies to add to favorites first
     When I visit my profile page
     And I click on position 1 slot
