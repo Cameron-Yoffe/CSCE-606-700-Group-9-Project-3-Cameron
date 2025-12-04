@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_03_231551) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_04_012957) do
   create_table "diary_entries", force: :cascade do |t|
     t.text "content", null: false
     t.datetime "created_at", null: false
@@ -114,6 +114,18 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_03_231551) do
     t.index ["value"], name: "index_ratings_on_value"
   end
 
+  create_table "recommendation_runs", force: :cascade do |t|
+    t.datetime "completed_at"
+    t.datetime "created_at", null: false
+    t.text "error_message"
+    t.string "job_id"
+    t.json "movies", default: [], null: false
+    t.string "status", default: "pending", null: false
+    t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
+    t.index ["user_id"], name: "index_recommendation_runs_on_user_id"
+  end
+
   create_table "review_reactions", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "emoji", default: "👍", null: false
@@ -183,6 +195,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_03_231551) do
   add_foreign_key "notifications", "users"
   add_foreign_key "ratings", "movies"
   add_foreign_key "ratings", "users"
+  add_foreign_key "recommendation_runs", "users"
   add_foreign_key "review_reactions", "ratings"
   add_foreign_key "review_reactions", "users"
   add_foreign_key "watchlists", "movies"

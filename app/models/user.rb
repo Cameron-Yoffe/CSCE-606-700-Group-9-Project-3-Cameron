@@ -12,6 +12,7 @@ class User < ApplicationRecord
   has_many :movies, through: :watchlists
   has_many :favorite_movies, through: :favorites, source: :movie
   has_many :review_reactions, dependent: :destroy
+  has_many :recommendation_runs, dependent: :destroy
   has_many :top_movies, -> { where.not(top_position: nil).order(:top_position) }, class_name: "Favorite"
 
   # Follow associations

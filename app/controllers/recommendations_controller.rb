@@ -1,47 +1,49 @@
-require "json"
-
 class RecommendationsController < ApplicationController
   before_action :require_login
 
   def show
-    recommended_movies = Recommender::Recommender.recommend_movies_for(current_user, limit: 20)
-    @recommendations = recommended_movies.map { |movie| serialize_movie(movie) }
+    @run = latest_run
+
+    if @run.nil? || @run.failed?
+      @run = start_run!
+    elsif (@run.pending? || @run.in_progress?) && @run.job_id.blank?
+      enqueue_run(@run)
+    end
+
+    @status = @run&.status || RecommendationRun::STATUSES[:pending]
+    @recommendations = @run&.completed? ? @run.movies : []
+  end
+
+  def refresh
+    run = start_run!
+    render json: { run_id: run.id, status: run.status }
+  end
+
+  def status
+    run = params[:run_id].present? ? current_user.recommendation_runs.find_by(id: params[:run_id]) : latest_run
+    return head :not_found unless run
+
+    render json: {
+      run_id: run.id,
+      status: run.status,
+      recommendations: run.completed? ? run.movies : []
+    }
   end
 
   private
 
-  def serialize_movie(movie)
-    cast_members = Array(parse_cast(movie.cast)).compact_blank
-
-    {
-      id: movie.id,
-      tmdb_id: movie.tmdb_id || movie.id,
-      title: movie.title,
-      year: movie.release_date&.year,
-      director: movie.director.presence || "Unknown",
-      cast: cast_members.first(3),
-      poster_url: movie.poster_image_url(size: "w500") || movie.poster_url || "https://placehold.co/500x750?text=No+Image",
-      details_path: movie_path(movie.tmdb_id || movie.id)
-    }
+  def latest_run
+    current_user.recommendation_runs.recent_first.first
   end
 
-  def parse_cast(raw_cast)
-    case raw_cast
-    when String
-      parse_cast_string(raw_cast)
-    when Array
-      raw_cast.map { |member| member.is_a?(Hash) ? member["name"] || member[:name] : member.to_s }
-    else
-      []
-    end
+  def start_run!
+    run = current_user.recommendation_runs.create!(status: RecommendationRun::STATUSES[:pending])
+    enqueue_run(run)
+    run
   end
 
-  def parse_cast_string(cast_string)
-    JSON.parse(cast_string).map do |member|
-      member.is_a?(Hash) ? member["name"] || member[:name] : member.to_s
-    end
-  rescue JSON::ParserError
-    cast_string.split(",").map(&:strip)
+  def enqueue_run(run)
+    GenerateRecommendationsJob.perform_later(run.id)
   end
 
   def require_login
