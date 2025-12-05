@@ -51,6 +51,66 @@ RSpec.describe "Movies", type: :request do
 
       expect(response.body).to include("Missing key")
     end
+
+    context "JSON API for search" do
+      it "returns movies when search query is provided" do
+        allow(client).to receive(:get).and_return({
+          "results" => [
+            { "id" => 123, "title" => "Test Movie", "poster_path" => "/test.jpg", "release_date" => "2024-01-01" }
+          ]
+        })
+
+        get movies_path, params: { search: "Test" }, headers: { 'Accept' => 'application/json' }
+
+        expect(response).to be_successful
+        json = JSON.parse(response.body)
+        expect(json["movies"]).to be_an(Array)
+        expect(json["movies"].first["title"]).to eq("Test Movie")
+        expect(json["movies"].first["poster_url"]).to include("https://image.tmdb.org")
+      end
+
+      it "returns empty array when search query is blank" do
+        get movies_path, params: { search: "" }, headers: { 'Accept' => 'application/json' }
+
+        expect(response).to be_successful
+        json = JSON.parse(response.body)
+        expect(json["movies"]).to eq([])
+      end
+
+      it "returns service unavailable when TMDB raises error" do
+        allow(client).to receive(:get).and_raise(Tmdb::Error.new("API failure"))
+
+        get movies_path, params: { search: "Test" }, headers: { 'Accept' => 'application/json' }
+
+        expect(response).to have_http_status(:service_unavailable)
+        json = JSON.parse(response.body)
+        expect(json["error"]).to include("API failure")
+      end
+
+      it "returns service unavailable when TMDB client is nil" do
+        allow(Tmdb::Client).to receive(:new).and_raise(Tmdb::AuthenticationError.new("Missing key"))
+
+        get movies_path, params: { search: "Test" }, headers: { 'Accept' => 'application/json' }
+
+        expect(response).to have_http_status(:service_unavailable)
+        json = JSON.parse(response.body)
+        expect(json["error"]).to include("TMDB API not available")
+      end
+
+      it "handles movies without poster path" do
+        allow(client).to receive(:get).and_return({
+          "results" => [
+            { "id" => 456, "title" => "No Poster Movie", "poster_path" => nil, "release_date" => "2023-05-15" }
+          ]
+        })
+
+        get movies_path, params: { search: "No Poster" }, headers: { 'Accept' => 'application/json' }
+
+        expect(response).to be_successful
+        json = JSON.parse(response.body)
+        expect(json["movies"].first["poster_url"]).to be_nil
+      end
+    end
   end
 
   describe "GET /movies/:id" do

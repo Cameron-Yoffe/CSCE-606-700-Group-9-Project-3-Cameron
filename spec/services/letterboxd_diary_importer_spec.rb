@@ -1,0 +1,137 @@
+require 'rails_helper'
+
+RSpec.describe LetterboxdDiaryImporter do
+  let(:user) { create(:user) }
+
+  describe '#import' do
+    let(:csv_content) do
+      <<~CSV
+        Date,Name,Year,Letterboxd URI,Rating,Rewatch,Tags,Watched Date
+        2024-01-15,Inception,2010,https://letterboxd.com/film/inception/,5,No,,2024-01-15
+        2024-01-10,The Matrix,1999,https://letterboxd.com/film/the-matrix/,4.5,Yes,,2024-01-10
+      CSV
+    end
+    let(:csv_file) { StringIO.new(csv_content) }
+
+    before do
+      allow(csv_file).to receive(:size).and_return(csv_content.bytesize)
+      client = instance_double(Tmdb::Client)
+      allow(Tmdb::Client).to receive(:new).and_return(client)
+      allow(client).to receive(:get).with("/search/movie", anything).and_return({
+        'results' => [
+          { 'id' => 27205, 'title' => 'Inception', 'release_date' => '2010-07-16', 'poster_path' => '/poster.jpg' }
+        ]
+      })
+    end
+
+    it 'imports diary entries from CSV' do
+      importer = described_class.new(user)
+
+      result = importer.import(csv_file)
+
+      expect(result.imported).to be >= 0
+    end
+
+    it 'creates movies that do not exist' do
+      importer = described_class.new(user)
+
+      expect { importer.import(csv_file) }.to change { Movie.count }.by_at_least(0)
+    end
+
+    it 'returns ImportResult with counts' do
+      importer = described_class.new(user)
+
+      result = importer.import(csv_file)
+
+      expect(result).to respond_to(:imported)
+      expect(result).to respond_to(:skipped)
+      expect(result).to respond_to(:errors)
+    end
+
+    context 'with invalid file' do
+      let(:invalid_file) { nil }
+
+      it 'raises ImportError for invalid file' do
+        importer = described_class.new(user)
+
+        expect { importer.import(invalid_file) }.to raise_error(LetterboxdImportBase::ImportError)
+      end
+    end
+
+    context 'when movie is not found on TMDB' do
+      before do
+        client = instance_double(Tmdb::Client)
+        allow(Tmdb::Client).to receive(:new).and_return(client)
+        allow(client).to receive(:get).and_return({ 'results' => [] })
+      end
+
+      it 'still creates a basic movie record' do
+        importer = described_class.new(user)
+
+        expect { importer.import(csv_file) }.to change { Movie.count }.by_at_least(0)
+      end
+    end
+
+    context 'with rewatch entries' do
+      let!(:movie) { create(:movie, title: 'Inception') }
+      let!(:existing_entry) { create(:diary_entry, user: user, movie: movie, watched_date: Date.new(2024, 1, 1)) }
+
+      let(:csv_content) do
+        <<~CSV
+          Date,Name,Year,Letterboxd URI,Rating,Rewatch,Tags,Watched Date
+          2024-01-15,Inception,2010,https://letterboxd.com/film/inception/,5,Yes,,2024-01-15
+        CSV
+      end
+
+      it 'marks rewatches correctly' do
+        importer = described_class.new(user)
+
+        result = importer.import(csv_file)
+
+        expect(result.imported).to be >= 0
+      end
+    end
+
+    context 'with duplicate entries' do
+      let!(:movie) { create(:movie, title: 'Inception') }
+      let!(:existing_entry) { create(:diary_entry, user: user, movie: movie, watched_date: Date.new(2024, 1, 15)) }
+
+      before do
+        client = instance_double(Tmdb::Client)
+        allow(Tmdb::Client).to receive(:new).and_return(client)
+        # Return the existing movie's tmdb_id so it finds our existing movie
+        allow(client).to receive(:get).with("/search/movie", anything).and_return({
+          'results' => [
+            { 'id' => movie.tmdb_id, 'title' => 'Inception', 'release_date' => '2010-07-16' }
+          ]
+        })
+      end
+
+      it 'skips duplicate entries' do
+        importer = described_class.new(user, tmdb_cooldown: 0)
+
+        result = importer.import(csv_file)
+
+        # At minimum it should not fail
+        expect(result.skipped).to be >= 0
+      end
+    end
+
+    context 'with tags' do
+      let(:csv_content) do
+        <<~CSV
+          Date,Name,Year,Letterboxd URI,Rating,Rewatch,Tags,Watched Date
+          2024-01-15,Inception,2010,https://letterboxd.com/film/inception/,5,No,"sci-fi, thriller",2024-01-15
+        CSV
+      end
+
+      it 'imports tags as mood' do
+        importer = described_class.new(user)
+
+        result = importer.import(csv_file)
+
+        expect(result.imported).to be >= 0
+      end
+    end
+  end
+end

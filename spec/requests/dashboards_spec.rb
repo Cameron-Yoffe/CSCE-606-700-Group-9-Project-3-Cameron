@@ -81,5 +81,77 @@ RSpec.describe "Dashboards", type: :request do
         expect(response.body).to include("No activity yet")
       end
     end
+
+    context "user search" do
+      before do
+        post sign_in_path, params: { email: user.email, password: password }
+      end
+
+      it "shows search results when search param is provided" do
+        other_user = create(:user, username: "searchable_user")
+
+        get dashboard_path, params: { search: "searchable" }
+
+        expect(response).to be_successful
+        expect(response.body).to include("searchable_user")
+      end
+    end
+  end
+
+  describe "GET /users/search (JSON API)" do
+    before do
+      post sign_in_path, params: { email: user.email, password: password }
+    end
+
+    it "returns matching users as JSON" do
+      other_user = create(:user, username: "findme_user")
+
+      get search_users_path, params: { q: "findme" }, headers: { 'Accept' => 'application/json' }
+
+      expect(response).to be_successful
+      json = JSON.parse(response.body)
+      expect(json["users"]).to be_an(Array)
+      expect(json["users"].first["username"]).to eq("findme_user")
+    end
+
+    it "returns empty array when query is blank" do
+      get search_users_path, params: { q: "" }, headers: { 'Accept' => 'application/json' }
+
+      expect(response).to be_successful
+      json = JSON.parse(response.body)
+      expect(json["users"]).to eq([])
+    end
+
+    it "excludes current user from search results" do
+      get search_users_path, params: { q: user.username }, headers: { 'Accept' => 'application/json' }
+
+      expect(response).to be_successful
+      json = JSON.parse(response.body)
+      expect(json["users"].map { |u| u["id"] }).not_to include(user.id)
+    end
+
+    it "includes follow status information" do
+      other_user = create(:user, username: "status_user")
+      user.follow(other_user)
+
+      get search_users_path, params: { q: "status_user" }, headers: { 'Accept' => 'application/json' }
+
+      json = JSON.parse(response.body)
+      user_data = json["users"].first
+      expect(user_data).to have_key("is_following")
+      expect(user_data).to have_key("is_private")
+      expect(user_data).to have_key("followers_count")
+    end
+
+    it "includes is_requested status for pending follow requests" do
+      private_user = create(:user, :private, username: "private_user")
+      user.follow(private_user)  # Creates pending request
+
+      get search_users_path, params: { q: "private_user" }, headers: { 'Accept' => 'application/json' }
+
+      json = JSON.parse(response.body)
+      user_data = json["users"].first
+      expect(user_data["is_requested"]).to be true
+    end
   end
 end

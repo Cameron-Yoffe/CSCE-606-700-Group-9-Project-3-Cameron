@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+echo "==> Running RSpec test suite"
+bundle exec rspec "$@"
+
+if [[ -f coverage/index.html ]]; then
+  if command -v open >/dev/null 2>&1; then
+    echo ""
+    echo "==> Opening coverage report"
+    open coverage/index.html
+  else
+    echo ""
+    echo "==> Coverage report available at coverage/index.html"
+  fi
+fi
