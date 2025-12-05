@@ -220,4 +220,18 @@ RSpec.describe User, type: :model do
       end
     end
   end
+
+  describe '#recompute_embedding!' do
+    let(:user) { create(:user) }
+
+    it 'calls Recommender::UserEmbedding.build_and_persist! with decay true by default' do
+      expect(Recommender::UserEmbedding).to receive(:build_and_persist!).with(user, decay: true)
+      user.recompute_embedding!
+    end
+
+    it 'calls Recommender::UserEmbedding.build_and_persist! with decay false when specified' do
+      expect(Recommender::UserEmbedding).to receive(:build_and_persist!).with(user, decay: false)
+      user.recompute_embedding!(decay: false)
+    end
+  end
 end
