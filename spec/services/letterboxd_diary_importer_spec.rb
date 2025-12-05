@@ -93,18 +93,14 @@ RSpec.describe LetterboxdDiaryImporter do
     end
 
     context 'with duplicate entries' do
-      let!(:movie) { create(:movie, title: 'Inception') }
+      let!(:movie) { create(:movie, title: 'Inception', tmdb_id: 27205, poster_url: '/poster.jpg', backdrop_url: '/backdrop.jpg') }
       let!(:existing_entry) { create(:diary_entry, user: user, movie: movie, watched_date: Date.new(2024, 1, 15)) }
 
       before do
         client = instance_double(Tmdb::Client)
         allow(Tmdb::Client).to receive(:new).and_return(client)
-        # Return the existing movie's tmdb_id so it finds our existing movie
-        allow(client).to receive(:get).with("/search/movie", anything).and_return({
-          'results' => [
-            { 'id' => movie.tmdb_id, 'title' => 'Inception', 'release_date' => '2010-07-16' }
-          ]
-        })
+        # Stub all possible TMDB API calls
+        allow(client).to receive(:get).and_return({ 'results' => [] })
       end
 
       it 'skips duplicate entries' do
