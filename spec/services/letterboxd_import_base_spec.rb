@@ -546,5 +546,46 @@ RSpec.describe LetterboxdImportBase do
         expect(importer.parse_year(nil)).to be_nil
       end
     end
+
+    describe 'utility helpers' do
+      let(:helper_importer) do
+        Class.new(described_class) do
+          public :safe_string, :sanitize_encoding, :parse_tmdb_date, :tmdb_image_url, :valid_file?
+
+          def import_row(row)
+            { status: :imported }
+          end
+        end
+      end
+
+      it 'sanitizes invalid encoding and trims whitespace' do
+        importer = helper_importer.new(user)
+        raw = "Title \xC0".dup.force_encoding("ASCII-8BIT")
+
+        expect(importer.safe_string(raw)).to eq("Title")
+      end
+
+      it 'handles parse_tmdb_date errors gracefully' do
+        importer = helper_importer.new(user)
+
+        expect(importer.parse_tmdb_date('invalid-date')).to be_nil
+        expect(importer.parse_tmdb_date(nil)).to be_nil
+      end
+
+      it 'builds tmdb image urls with normalized path' do
+        importer = helper_importer.new(user)
+
+        expect(importer.tmdb_image_url('poster.png', size: 'w100')).to eq("https://image.tmdb.org/t/p/w100/poster.png")
+        expect(importer.tmdb_image_url(nil)).to be_nil
+      end
+
+      it 'validates files respond to read and size' do
+        importer = helper_importer.new(user)
+        file = StringIO.new('data')
+
+        expect(importer.valid_file?(file)).to be(true)
+        expect(importer.valid_file?(double(:file, read: nil, size: 0))).to be(false)
+      end
+    end
   end
 end

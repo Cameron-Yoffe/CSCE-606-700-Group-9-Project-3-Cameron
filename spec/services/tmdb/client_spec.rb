@@ -177,6 +177,25 @@ RSpec.describe Tmdb::Client do
     end
   end
 
+  describe "#get URI building" do
+      it "includes api key and language in encoded query" do
+        client = described_class.new(api_key: "abc", language: "en-US", request_interval: 0)
+        allow(Net::HTTP).to receive(:new).and_wrap_original do |m, host, port|
+          m.call(host, port).tap do |http|
+            allow(http).to receive(:use_ssl=)
+            allow(http).to receive(:use_ssl?).and_return(false)
+            allow(http).to receive(:open_timeout=)
+            allow(http).to receive(:read_timeout=)
+            allow(http).to receive(:request).and_return(Net::HTTPOK.new("1.1", "200", "OK").tap { |resp| allow(resp).to receive(:body).and_return("{}") })
+          end
+        end
+
+        response = client.get("/movie/1", language: nil)
+
+      expect(response).to eq({})
+    end
+  end
+
   describe "#parse_response" do
     let(:http) { instance_double(Net::HTTP) }
 

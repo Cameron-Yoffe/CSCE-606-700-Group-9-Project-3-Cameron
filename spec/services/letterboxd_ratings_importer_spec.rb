@@ -95,6 +95,14 @@ RSpec.describe LetterboxdRatingsImporter do
       let!(:movie) { create(:movie, title: 'Inception') }
       let!(:existing_rating) { create(:rating, user: user, movie: movie, value: 8) }
 
+      before do
+        client = instance_double(Tmdb::Client)
+        allow(Tmdb::Client).to receive(:new).and_return(client)
+        allow(client).to receive(:get).and_return({
+          'results' => [ { 'id' => 27205, 'title' => 'Inception', 'release_date' => '2010-07-16' } ]
+        })
+      end
+
       it 'skips duplicate ratings' do
         importer = described_class.new(user)
 
@@ -118,6 +126,13 @@ RSpec.describe LetterboxdRatingsImporter do
       row = { "Letterboxd URI" => "https://letterboxd.com/film/abc" }
 
       expect(importer.send(:build_review, row)).to include("https://letterboxd.com/film/abc")
+    end
+
+    it 'returns nil review when uri missing' do
+      importer = described_class.new(user)
+      row = { "Letterboxd URI" => "" }
+
+      expect(importer.send(:build_review, row)).to be_nil
     end
   end
 end

@@ -334,4 +334,22 @@ RSpec.describe Recommender::CandidateGenerator do
       expect(candidates).to be_an(Array)
     end
   end
+
+  describe "additional helpers" do
+    it "builds tmdb image urls and handles blank paths" do
+      expect(described_class.send(:tmdb_image, "/poster.png", size: "w200")).to eq("https://image.tmdb.org/t/p/w200/poster.png")
+      expect(described_class.send(:tmdb_image, nil)).to be_nil
+    end
+
+    it "detects when cast information is present" do
+      expect(described_class.send(:cast_present?, '["Actor"]')).to be(true)
+      expect(described_class.send(:cast_present?, "")).to be(false)
+    end
+
+    it "normalizes malformed cast strings" do
+      normalized = described_class.send(:normalize_cast, "Actor One, Actor Two")
+
+      expect(normalized).to eq([ "Actor One", "Actor Two" ])
+    end
+  end
 end

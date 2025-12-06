@@ -159,12 +159,28 @@ RSpec.describe LetterboxdDiaryImporter do
         expect(content).to eq("Imported from Letterboxd diary: cozy.")
       end
 
+      it 'builds minimal content when no uri or tags are present' do
+        importer = described_class.new(user)
+        row = { "Letterboxd URI" => nil, "Tags" => nil }
+
+        content = importer.send(:build_content, row)
+
+        expect(content).to eq("Imported from Letterboxd diary.")
+      end
+
       it 'parses tags into comma separated string' do
         importer = described_class.new(user)
 
         tags = importer.send(:parsed_tags, "tag1, tag2 ,, tag3 ")
 
         expect(tags).to eq("tag1, tag2, tag3")
+      end
+
+      it 'returns nil when tags value is blank' do
+        importer = described_class.new(user)
+
+        expect(importer.send(:parsed_tags, nil)).to be_nil
+        expect(importer.send(:parsed_tags, "")).to be_nil
       end
     end
   end
