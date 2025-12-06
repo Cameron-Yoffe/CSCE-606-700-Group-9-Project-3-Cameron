@@ -5,6 +5,8 @@ RSpec.describe Recommender::Recommender do
     it "ranks candidates by dot product similarity" do
       user = create(:user, user_embedding: { "genre:Drama" => 1.0, "director:Pat" => 1.0 })
 
+      allow(Recommender::CandidateGenerator).to receive(:tmdb_client).and_return(nil)
+
       top_pick = create(
         :movie,
         genres: [ "Drama" ].to_json,

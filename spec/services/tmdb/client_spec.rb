@@ -11,19 +11,21 @@ RSpec.describe Tmdb::Client do
   end
 
   describe "#movie" do
-    it "fetches movie details and returns parsed JSON",
-       vcr: { cassette_name: "tmdb/movie_success" },
-       skip: "VCR cassette not available in CI environment" do
-      movie = client.movie(550)
+    it "fetches movie details and returns parsed JSON" do
+      movie = VCR.use_cassette("tmdb/movie_success") do
+        client.movie(550)
+      end
 
       expect(movie["id"]).to eq(550)
       expect(movie["title"]).to eq("Fight Club")
     end
 
-    it "raises not found error for missing movie",
-       vcr: { cassette_name: "tmdb/movie_not_found" },
-       skip: "VCR cassette not available in CI environment" do
-      expect { client.movie(0) }
+    it "raises not found error for missing movie" do
+      expect {
+        VCR.use_cassette("tmdb/movie_not_found") do
+          client.movie(0)
+        end
+      }
        .to raise_error(Tmdb::NotFoundError, /not found/i)
     end
 
