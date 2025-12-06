@@ -41,3 +41,14 @@ bin/check
 ```
 
 This runs RSpec, Cucumber (if present), and `rubocop -a`, skipping any tool that isn't installed in the bundle.
+
+## Deployment
+
+https://movie-diary-1b90beb60a9f.herokuapp.com/
+
+## Other Documentation
+
+[User Guide](docs/User%20Guide.pdf)
+
+[Technical Documentation](docs/)
+
