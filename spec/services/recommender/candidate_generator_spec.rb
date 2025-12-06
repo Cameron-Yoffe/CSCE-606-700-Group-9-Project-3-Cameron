@@ -355,7 +355,7 @@ RSpec.describe Recommender::CandidateGenerator do
     end
 
     it "returns array cast unchanged and handles nil" do
-      expect(described_class.send(:normalize_cast, ["Actor"])).to eq(["Actor"])
+      expect(described_class.send(:normalize_cast, [ "Actor" ])).to eq([ "Actor" ])
       expect(described_class.send(:normalize_cast, nil)).to eq([])
     end
 
@@ -364,7 +364,7 @@ RSpec.describe Recommender::CandidateGenerator do
       allow(client).to receive(:get).and_raise(Tmdb::Error.new("boom"))
       allow(Rails.logger).to receive(:warn)
 
-      genres = described_class.send(:tmdb_genre_ids, client, ["Action"])
+      genres = described_class.send(:tmdb_genre_ids, client, [ "Action" ])
 
       expect(genres).to eq([])
     end
@@ -372,7 +372,7 @@ RSpec.describe Recommender::CandidateGenerator do
     it "handles tmdb movie recommendation mapping" do
       tmdb_client = instance_double(Tmdb::Client)
       movie = build(:movie, tmdb_id: 10)
-      allow(described_class).to receive(:preferred_tmdb_movie_ids).and_return([1])
+      allow(described_class).to receive(:preferred_tmdb_movie_ids).and_return([ 1 ])
       allow(described_class).to receive(:fetch_tmdb_collection).and_return([ { 'id' => 10 } ])
       allow(described_class).to receive(:upsert_tmdb_movie).and_return(movie)
 
@@ -384,14 +384,14 @@ RSpec.describe Recommender::CandidateGenerator do
     it "handles tmdb genre discoveries" do
       tmdb_client = instance_double(Tmdb::Client)
       movie = build(:movie, tmdb_id: 20)
-      allow(described_class).to receive(:dominant_genres).and_return(["Action"])
-      allow(described_class).to receive(:tmdb_genre_ids).and_return([28])
+      allow(described_class).to receive(:dominant_genres).and_return([ "Action" ])
+      allow(described_class).to receive(:tmdb_genre_ids).and_return([ 28 ])
       allow(described_class).to receive(:fetch_tmdb_collection).and_return([ { 'id' => 20 } ])
       allow(described_class).to receive(:upsert_tmdb_movie).and_return(movie)
 
       results = described_class.send(:tmdb_genre_discoveries, user, tmdb_client)
 
-      expect(results).to eq([movie])
+      expect(results).to eq([ movie ])
     end
 
     it "returns all people when role is unrecognized" do

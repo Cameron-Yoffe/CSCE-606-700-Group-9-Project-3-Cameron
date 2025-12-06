@@ -202,7 +202,7 @@ RSpec.describe LetterboxdDiaryImporter do
 
     it 'returns error status when diary entry is invalid' do
       allow_any_instance_of(DiaryEntry).to receive(:save).and_return(false)
-      allow_any_instance_of(DiaryEntry).to receive_message_chain(:errors, :full_messages).and_return(["is invalid"])
+      allow_any_instance_of(DiaryEntry).to receive_message_chain(:errors, :full_messages).and_return([ "is invalid" ])
 
       importer = described_class.new(user)
 

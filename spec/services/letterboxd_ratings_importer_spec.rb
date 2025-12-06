@@ -137,7 +137,7 @@ RSpec.describe LetterboxdRatingsImporter do
 
     it 'returns error status when rating is invalid' do
       allow_any_instance_of(Rating).to receive(:save).and_return(false)
-      allow_any_instance_of(Rating).to receive_message_chain(:errors, :full_messages).and_return(["is invalid"])
+      allow_any_instance_of(Rating).to receive_message_chain(:errors, :full_messages).and_return([ "is invalid" ])
 
       importer = described_class.new(user)
 
