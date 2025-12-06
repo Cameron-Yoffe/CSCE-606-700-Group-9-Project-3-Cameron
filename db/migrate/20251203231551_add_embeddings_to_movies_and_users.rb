@@ -9,8 +9,12 @@ class AddEmbeddingsToMoviesAndUsers < ActiveRecord::Migration[7.1]
     add_movie_index_options = postgres? ? { using: :gin } : {}
     add_user_index_options = postgres? ? { using: :gin } : {}
 
-    add_index :movies, :movie_embedding, **add_movie_index_options unless index_exists?(:movies, :movie_embedding)
-    add_index :users, :user_embedding, **add_user_index_options unless index_exists?(:users, :user_embedding)
+    # add_index :movies, :movie_embedding, **add_movie_index_options unless index_exists?(:movies, :movie_embedding)
+    # add_index :users, :user_embedding, **add_user_index_options unless index_exists?(:users, :user_embedding)
+
+    # columns should be :jsonb not :json
+    add_column :movies, :movie_embedding, :jsonb, null: false, default: {}
+    add_index  :movies, :movie_embedding, using: :gin
   end
 
   private
