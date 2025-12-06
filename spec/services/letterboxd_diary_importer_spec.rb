@@ -11,6 +11,15 @@ RSpec.describe LetterboxdDiaryImporter do
         2024-01-10,The Matrix,1999,https://letterboxd.com/film/the-matrix/,4.5,Yes,,2024-01-10
       CSV
     end
+
+    it 'skips rows without watched date' do
+      importer = described_class.new(user)
+      row = CSV::Row.new(%w[Name Watched\ Date], ["Movie", ""])
+
+      result = importer.send(:import_row, row)
+
+      expect(result[:status]).to eq(:skipped)
+    end
     let(:csv_file) { StringIO.new(csv_content) }
 
     before do
@@ -127,6 +136,35 @@ RSpec.describe LetterboxdDiaryImporter do
         result = importer.import(csv_file)
 
         expect(result.imported).to be >= 0
+      end
+    end
+
+    describe 'private helpers' do
+      it 'builds content with uri and tags' do
+        importer = described_class.new(user)
+        row = { "Letterboxd URI" => "https://example.com/film", "Tags" => "great" }
+
+        content = importer.send(:build_content, row)
+
+        expect(content).to include("https://example.com/film")
+        expect(content).to include("great")
+      end
+
+      it 'builds content without uri' do
+        importer = described_class.new(user)
+        row = { "Letterboxd URI" => "", "Tags" => "cozy" }
+
+        content = importer.send(:build_content, row)
+
+        expect(content).to eq("Imported from Letterboxd diary: cozy.")
+      end
+
+      it 'parses tags into comma separated string' do
+        importer = described_class.new(user)
+
+        tags = importer.send(:parsed_tags, "tag1, tag2 ,, tag3 ")
+
+        expect(tags).to eq("tag1, tag2, tag3")
       end
     end
   end

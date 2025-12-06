@@ -103,5 +103,21 @@ RSpec.describe LetterboxdRatingsImporter do
         expect(result.skipped).to be >= 1
       end
     end
+
+    it 'skips entries with non-positive ratings' do
+      importer = described_class.new(user)
+      row = CSV::Row.new(%w[Name Rating], ["Movie", "0"])
+
+      result = importer.send(:import_row, row)
+
+      expect(result[:status]).to eq(:skipped)
+    end
+
+    it 'builds a review when uri is present' do
+      importer = described_class.new(user)
+      row = { "Letterboxd URI" => "https://letterboxd.com/film/abc" }
+
+      expect(importer.send(:build_review, row)).to include("https://letterboxd.com/film/abc")
+    end
   end
 end

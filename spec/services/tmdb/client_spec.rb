@@ -51,6 +51,31 @@ RSpec.describe Tmdb::Client do
       expect(cert_store).to have_received(:set_default_paths)
       expect(http).to have_received(:cert_store=).with(cert_store)
     end
+
+    it "disables SSL verification when requested" do
+      http = instance_double(Net::HTTP)
+      allow(Net::HTTP).to receive(:new).and_return(http)
+      allow(http).to receive(:use_ssl=).with(true)
+      allow(http).to receive(:use_ssl?).and_return(true)
+      allow(http).to receive(:cert_store=)
+      allow(http).to receive(:open_timeout=)
+      allow(http).to receive(:read_timeout=)
+      allow(http).to receive(:verify_mode=).with(OpenSSL::SSL::VERIFY_NONE)
+
+      response = Net::HTTPOK.new("1.1", "200", "OK")
+      allow(response).to receive(:body).and_return("{}")
+      allow(http).to receive(:request).and_return(response)
+
+      original_env = ENV["TMDB_RELAX_SSL"]
+      begin
+        ENV["TMDB_RELAX_SSL"] = "1"
+        client.movie(550)
+      ensure
+        ENV["TMDB_RELAX_SSL"] = original_env
+      end
+
+      expect(http).to have_received(:verify_mode=).with(OpenSSL::SSL::VERIFY_NONE)
+    end
   end
 
   describe ".new" do
@@ -218,6 +243,41 @@ RSpec.describe Tmdb::Client do
       allow(http).to receive(:request).and_return(response)
 
       expect { client.get("/test") }.to raise_error(Tmdb::Error, /parsing failed/i)
+    end
+
+    it "returns empty hash when body is blank" do
+      response = Net::HTTPOK.new("1.1", "200", "OK")
+      allow(response).to receive(:body).and_return("")
+      allow(http).to receive(:request).and_return(response)
+
+      expect(client.get("/test")).to eq({})
+    end
+  end
+
+  describe "rate limiting" do
+    it "sleeps when the interval has not elapsed" do
+      throttled_client = described_class.new(api_key: "test_key", request_interval: 0.1)
+      allow(throttled_client.class).to receive(:mutex).and_return(Mutex.new)
+
+      # Force last request to be very recent
+      throttled_client.class.last_request_at = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+
+      http = instance_double(Net::HTTP)
+      allow(Net::HTTP).to receive(:new).and_return(http)
+      allow(http).to receive(:use_ssl=)
+      allow(http).to receive(:use_ssl?).and_return(false)
+      allow(http).to receive(:open_timeout=)
+      allow(http).to receive(:read_timeout=)
+
+      response = Net::HTTPOK.new("1.1", "200", "OK")
+      allow(response).to receive(:body).and_return("{}")
+      allow(http).to receive(:request).and_return(response)
+
+      allow(throttled_client).to receive(:sleep)
+
+      throttled_client.get("/test")
+
+      expect(throttled_client).to have_received(:sleep).with(be > 0)
     end
   end
 end

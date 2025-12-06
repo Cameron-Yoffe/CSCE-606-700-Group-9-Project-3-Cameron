@@ -27,5 +27,27 @@ RSpec.describe Recommender::Recommender do
       expect(recommendations.first).to eq(top_pick)
       expect(recommendations).to contain_exactly(top_pick, runner_up)
     end
+
+    it "fetches TMDB-backed candidates", vcr: { cassette_name: "recommender/recommend_movies_for_tmdb" } do
+      user = create(:user, user_embedding: { "director:Pat Director" => 2.5 })
+
+      Recommender::CandidateGenerator.instance_variable_set(:@tmdb_client, nil)
+      allow(Tmdb::Client).to receive(:new).and_return(Tmdb::Client.new(api_key: "test_api_key", request_interval: 0))
+      allow(Recommender::CandidateGenerator).to receive(:random).and_return(Random.new(1234))
+
+      client = Recommender::CandidateGenerator.send(:tmdb_client)
+      Recommender::CandidateGenerator.instance_variable_set(:@tmdb_client, client)
+
+      captured_tmdb = []
+      allow(Recommender::CandidateGenerator).to receive(:tmdb_candidates_for).and_wrap_original do |method, user_arg, kwargs|
+        captured_tmdb = method.call(user_arg, **kwargs)
+      end
+
+      recommendations = described_class.recommend_movies_for(user, limit: 2)
+
+      expect(recommendations.map(&:tmdb_id)).to include(1000)
+      expect(recommendations.first.title).to eq("Pat Movie")
+      expect(captured_tmdb.map(&:tmdb_id)).to include(1000, 2000)
+    end
   end
 end
