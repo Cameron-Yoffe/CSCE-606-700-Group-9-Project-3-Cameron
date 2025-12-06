@@ -28,18 +28,55 @@ RSpec.describe Recommender::Recommender do
       expect(recommendations).to contain_exactly(top_pick, runner_up)
     end
 
-    it "fetches TMDB-backed candidates", vcr: { cassette_name: "recommender/recommend_movies_for_tmdb" } do
+    it "fetches TMDB-backed candidates" do
       user = create(:user, user_embedding: { "director:Pat Director" => 2.5 })
 
       Recommender::CandidateGenerator.instance_variable_set(:@tmdb_client, nil)
-      allow(Tmdb::Client).to receive(:new).and_return(Tmdb::Client.new(api_key: "test_api_key", request_interval: 0))
       allow(Recommender::CandidateGenerator).to receive(:random).and_return(Random.new(1234))
 
-      client = Recommender::CandidateGenerator.send(:tmdb_client)
-      Recommender::CandidateGenerator.instance_variable_set(:@tmdb_client, client)
+      client = instance_double(Tmdb::Client)
+      allow(Tmdb::Client).to receive(:new).and_return(client)
+
+      allow(client).to receive(:get).and_return({ "results" => [] })
+
+      allow(client).to receive(:get).with("/search/person", hash_including(query: "Pat Director")).and_return({
+        "results" => [{
+          "known_for_department" => "Directing",
+          "known_for" => [
+            { "media_type" => "movie", "id" => 1000 },
+            { "media_type" => "movie", "id" => 2000 }
+          ]
+        }]
+      })
+
+      allow(client).to receive(:movie).with(1000, append_to_response: "credits").and_return({
+        "id" => 1000,
+        "title" => "Pat Movie",
+        "release_date" => "2020-01-01",
+        "poster_path" => "/poster.jpg",
+        "backdrop_path" => "/backdrop.jpg",
+        "vote_average" => 7.5,
+        "vote_count" => 500,
+        "runtime" => 110,
+        "genres" => [{ "name" => "Drama" }],
+        "credits" => { "crew" => [{ "job" => "Director", "name" => "Pat Director" }], "cast" => [] }
+      })
+
+      allow(client).to receive(:movie).with(2000, append_to_response: "credits").and_return({
+        "id" => 2000,
+        "title" => "Other Movie",
+        "release_date" => "2020-01-02",
+        "poster_path" => "/poster2.jpg",
+        "backdrop_path" => "/backdrop2.jpg",
+        "vote_average" => 7.0,
+        "vote_count" => 400,
+        "runtime" => 100,
+        "genres" => [{ "name" => "Drama" }],
+        "credits" => { "crew" => [], "cast" => [] }
+      })
 
       captured_tmdb = []
-      allow(Recommender::CandidateGenerator).to receive(:tmdb_candidates_for).and_wrap_original do |method, user_arg, kwargs|
+      allow(Recommender::CandidateGenerator).to receive(:tmdb_candidates_for).and_wrap_original do |method, user_arg, **kwargs|
         captured_tmdb = method.call(user_arg, **kwargs)
       end
 
