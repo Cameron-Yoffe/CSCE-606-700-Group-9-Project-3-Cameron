@@ -106,7 +106,7 @@ RSpec.describe LetterboxdRatingsImporter do
 
     it 'skips entries with non-positive ratings' do
       importer = described_class.new(user)
-      row = CSV::Row.new(%w[Name Rating], ["Movie", "0"])
+      row = CSV::Row.new(%w[Name Rating], [ "Movie", "0" ])
 
       result = importer.send(:import_row, row)
 

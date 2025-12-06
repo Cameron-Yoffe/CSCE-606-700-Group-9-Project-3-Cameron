@@ -14,7 +14,7 @@ RSpec.describe LetterboxdDiaryImporter do
 
     it 'skips rows without watched date' do
       importer = described_class.new(user)
-      row = CSV::Row.new(%w[Name Watched\ Date], ["Movie", ""])
+      row = CSV::Row.new(%w[Name Watched\ Date], [ "Movie", "" ])
 
       result = importer.send(:import_row, row)
 

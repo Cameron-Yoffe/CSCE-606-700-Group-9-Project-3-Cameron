@@ -40,13 +40,13 @@ RSpec.describe Recommender::Recommender do
       allow(client).to receive(:get).and_return({ "results" => [] })
 
       allow(client).to receive(:get).with("/search/person", hash_including(query: "Pat Director")).and_return({
-        "results" => [{
+        "results" => [ {
           "known_for_department" => "Directing",
           "known_for" => [
             { "media_type" => "movie", "id" => 1000 },
             { "media_type" => "movie", "id" => 2000 }
           ]
-        }]
+        } ]
       })
 
       allow(client).to receive(:movie).with(1000, append_to_response: "credits").and_return({
@@ -58,8 +58,8 @@ RSpec.describe Recommender::Recommender do
         "vote_average" => 7.5,
         "vote_count" => 500,
         "runtime" => 110,
-        "genres" => [{ "name" => "Drama" }],
-        "credits" => { "crew" => [{ "job" => "Director", "name" => "Pat Director" }], "cast" => [] }
+        "genres" => [ { "name" => "Drama" } ],
+        "credits" => { "crew" => [ { "job" => "Director", "name" => "Pat Director" } ], "cast" => [] }
       })
 
       allow(client).to receive(:movie).with(2000, append_to_response: "credits").and_return({
@@ -71,7 +71,7 @@ RSpec.describe Recommender::Recommender do
         "vote_average" => 7.0,
         "vote_count" => 400,
         "runtime" => 100,
-        "genres" => [{ "name" => "Drama" }],
+        "genres" => [ { "name" => "Drama" } ],
         "credits" => { "crew" => [], "cast" => [] }
       })
 
