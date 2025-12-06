@@ -11,19 +11,21 @@ RSpec.describe Tmdb::Client do
   end
 
   describe "#movie" do
-    it "fetches movie details and returns parsed JSON",
-       vcr: { cassette_name: "tmdb/movie_success" },
-       skip: "VCR cassette not available in CI environment" do
-      movie = client.movie(550)
+    it "fetches movie details and returns parsed JSON" do
+      movie = VCR.use_cassette("tmdb/movie_success") do
+        client.movie(550)
+      end
 
       expect(movie["id"]).to eq(550)
       expect(movie["title"]).to eq("Fight Club")
     end
 
-    it "raises not found error for missing movie",
-       vcr: { cassette_name: "tmdb/movie_not_found" },
-       skip: "VCR cassette not available in CI environment" do
-      expect { client.movie(0) }
+    it "raises not found error for missing movie" do
+      expect {
+        VCR.use_cassette("tmdb/movie_not_found") do
+          client.movie(0)
+        end
+      }
        .to raise_error(Tmdb::NotFoundError, /not found/i)
     end
 
@@ -49,12 +51,47 @@ RSpec.describe Tmdb::Client do
       expect(cert_store).to have_received(:set_default_paths)
       expect(http).to have_received(:cert_store=).with(cert_store)
     end
+
+    it "disables SSL verification when requested" do
+      http = instance_double(Net::HTTP)
+      allow(Net::HTTP).to receive(:new).and_return(http)
+      allow(http).to receive(:use_ssl=).with(true)
+      allow(http).to receive(:use_ssl?).and_return(true)
+      allow(http).to receive(:cert_store=)
+      allow(http).to receive(:open_timeout=)
+      allow(http).to receive(:read_timeout=)
+      allow(http).to receive(:verify_mode=).with(OpenSSL::SSL::VERIFY_NONE)
+
+      response = Net::HTTPOK.new("1.1", "200", "OK")
+      allow(response).to receive(:body).and_return("{}")
+      allow(http).to receive(:request).and_return(response)
+
+      original_env = ENV["TMDB_RELAX_SSL"]
+      begin
+        ENV["TMDB_RELAX_SSL"] = "1"
+        client.movie(550)
+      ensure
+        ENV["TMDB_RELAX_SSL"] = original_env
+      end
+
+      expect(http).to have_received(:verify_mode=).with(OpenSSL::SSL::VERIFY_NONE)
+    end
   end
 
   describe ".new" do
     it "raises authentication error when api key missing" do
       expect { described_class.new(api_key: nil) }
         .to raise_error(Tmdb::AuthenticationError, /missing/i)
+    end
+
+    it "exposes shared mutex and default interval" do
+      allow(Rails.application.config.x.tmdb).to receive(:request_interval).and_return(1.25)
+
+      mutex = described_class.mutex
+
+      expect(mutex).to be_a(Mutex)
+      expect(described_class.default_request_interval).to eq(1.25)
+      expect(described_class.mutex).to eq(mutex)
     end
   end
 
@@ -150,6 +187,25 @@ RSpec.describe Tmdb::Client do
     end
   end
 
+  describe "#get URI building" do
+      it "includes api key and language in encoded query" do
+        client = described_class.new(api_key: "abc", language: "en-US", request_interval: 0)
+        allow(Net::HTTP).to receive(:new).and_wrap_original do |m, host, port|
+          m.call(host, port).tap do |http|
+            allow(http).to receive(:use_ssl=)
+            allow(http).to receive(:use_ssl?).and_return(false)
+            allow(http).to receive(:open_timeout=)
+            allow(http).to receive(:read_timeout=)
+            allow(http).to receive(:request).and_return(Net::HTTPOK.new("1.1", "200", "OK").tap { |resp| allow(resp).to receive(:body).and_return("{}") })
+          end
+        end
+
+        response = client.get("/movie/1", language: nil)
+
+      expect(response).to eq({})
+    end
+  end
+
   describe "#parse_response" do
     let(:http) { instance_double(Net::HTTP) }
 
@@ -216,6 +272,41 @@ RSpec.describe Tmdb::Client do
       allow(http).to receive(:request).and_return(response)
 
       expect { client.get("/test") }.to raise_error(Tmdb::Error, /parsing failed/i)
+    end
+
+    it "returns empty hash when body is blank" do
+      response = Net::HTTPOK.new("1.1", "200", "OK")
+      allow(response).to receive(:body).and_return("")
+      allow(http).to receive(:request).and_return(response)
+
+      expect(client.get("/test")).to eq({})
+    end
+  end
+
+  describe "rate limiting" do
+    it "sleeps when the interval has not elapsed" do
+      throttled_client = described_class.new(api_key: "test_key", request_interval: 0.1)
+      allow(throttled_client.class).to receive(:mutex).and_return(Mutex.new)
+
+      # Force last request to be very recent
+      throttled_client.class.last_request_at = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+
+      http = instance_double(Net::HTTP)
+      allow(Net::HTTP).to receive(:new).and_return(http)
+      allow(http).to receive(:use_ssl=)
+      allow(http).to receive(:use_ssl?).and_return(false)
+      allow(http).to receive(:open_timeout=)
+      allow(http).to receive(:read_timeout=)
+
+      response = Net::HTTPOK.new("1.1", "200", "OK")
+      allow(response).to receive(:body).and_return("{}")
+      allow(http).to receive(:request).and_return(response)
+
+      allow(throttled_client).to receive(:sleep)
+
+      throttled_client.get("/test")
+
+      expect(throttled_client).to have_received(:sleep).with(be > 0)
     end
   end
 end

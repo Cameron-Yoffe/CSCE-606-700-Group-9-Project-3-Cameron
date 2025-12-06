@@ -87,5 +87,30 @@ RSpec.describe Recommender::MovieSerializer do
 
       expect(result[:tmdb_id]).to eq(movie.id)
     end
+
+    it 'handles cast arrays with symbolized names' do
+      allow(movie).to receive(:cast).and_return([ { name: 'Symbol Actor' }, { name: 'Second' } ])
+
+      result = described_class.call(movie)
+
+      expect(result[:cast]).to eq([ 'Symbol Actor', 'Second' ])
+    end
+
+    it 'falls back to placeholder poster when none is available' do
+      movie.update!(poster_url: nil)
+      allow(movie).to receive(:poster_image_url).and_return(nil)
+
+      result = described_class.call(movie)
+
+      expect(result[:poster_url]).to include('placehold.co')
+    end
+
+    it 'parses malformed cast strings using commas' do
+      movie.update!(cast: 'Bad JSON [ ,One, Two ]')
+
+      result = described_class.call(movie)
+
+      expect(result[:cast]).to eq([ 'Bad JSON [', 'One', 'Two ]' ])
+    end
   end
 end

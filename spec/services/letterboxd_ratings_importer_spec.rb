@@ -95,6 +95,14 @@ RSpec.describe LetterboxdRatingsImporter do
       let!(:movie) { create(:movie, title: 'Inception') }
       let!(:existing_rating) { create(:rating, user: user, movie: movie, value: 8) }
 
+      before do
+        client = instance_double(Tmdb::Client)
+        allow(Tmdb::Client).to receive(:new).and_return(client)
+        allow(client).to receive(:get).and_return({
+          'results' => [ { 'id' => 27205, 'title' => 'Inception', 'release_date' => '2010-07-16' } ]
+        })
+      end
+
       it 'skips duplicate ratings' do
         importer = described_class.new(user)
 
@@ -102,6 +110,45 @@ RSpec.describe LetterboxdRatingsImporter do
 
         expect(result.skipped).to be >= 1
       end
+    end
+
+    it 'skips entries with non-positive ratings' do
+      importer = described_class.new(user)
+      row = CSV::Row.new(%w[Name Rating], [ "Movie", "0" ])
+
+      result = importer.send(:import_row, row)
+
+      expect(result[:status]).to eq(:skipped)
+    end
+
+    it 'builds a review when uri is present' do
+      importer = described_class.new(user)
+      row = { "Letterboxd URI" => "https://letterboxd.com/film/abc" }
+
+      expect(importer.send(:build_review, row)).to include("https://letterboxd.com/film/abc")
+    end
+
+    it 'returns nil review when uri missing' do
+      importer = described_class.new(user)
+      row = { "Letterboxd URI" => "" }
+
+      expect(importer.send(:build_review, row)).to be_nil
+    end
+
+    it 'returns error status when rating is invalid' do
+      allow_any_instance_of(Rating).to receive(:save).and_return(false)
+      allow_any_instance_of(Rating).to receive_message_chain(:errors, :full_messages).and_return([ "is invalid" ])
+
+      importer = described_class.new(user)
+
+      csv_content = <<~CSV
+        Date,Name,Year,Letterboxd URI,Rating
+        2024-01-01,Inception,2010,https://example.com,4.5
+      CSV
+
+      result = importer.import(StringIO.new(csv_content))
+
+      expect(result.errors).to include("is invalid")
     end
   end
 end

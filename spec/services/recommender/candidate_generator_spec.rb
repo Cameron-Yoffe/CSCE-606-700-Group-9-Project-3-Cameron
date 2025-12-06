@@ -334,4 +334,75 @@ RSpec.describe Recommender::CandidateGenerator do
       expect(candidates).to be_an(Array)
     end
   end
+
+  describe "additional helpers" do
+    let(:user) { create(:user) }
+
+    it "builds tmdb image urls and handles blank paths" do
+      expect(described_class.send(:tmdb_image, "/poster.png", size: "w200")).to eq("https://image.tmdb.org/t/p/w200/poster.png")
+      expect(described_class.send(:tmdb_image, nil)).to be_nil
+    end
+
+    it "detects when cast information is present" do
+      expect(described_class.send(:cast_present?, '["Actor"]')).to be(true)
+      expect(described_class.send(:cast_present?, "")).to be(false)
+    end
+
+    it "normalizes malformed cast strings" do
+      normalized = described_class.send(:normalize_cast, "Actor One, Actor Two")
+
+      expect(normalized).to eq([ "Actor One", "Actor Two" ])
+    end
+
+    it "returns array cast unchanged and handles nil" do
+      expect(described_class.send(:normalize_cast, [ "Actor" ])).to eq([ "Actor" ])
+      expect(described_class.send(:normalize_cast, nil)).to eq([])
+    end
+
+    it "rescues genre lookup errors" do
+      client = instance_double(Tmdb::Client)
+      allow(client).to receive(:get).and_raise(Tmdb::Error.new("boom"))
+      allow(Rails.logger).to receive(:warn)
+
+      genres = described_class.send(:tmdb_genre_ids, client, [ "Action" ])
+
+      expect(genres).to eq([])
+    end
+
+    it "handles tmdb movie recommendation mapping" do
+      tmdb_client = instance_double(Tmdb::Client)
+      movie = build(:movie, tmdb_id: 10)
+      allow(described_class).to receive(:preferred_tmdb_movie_ids).and_return([ 1 ])
+      allow(described_class).to receive(:fetch_tmdb_collection).and_return([ { 'id' => 10 } ])
+      allow(described_class).to receive(:upsert_tmdb_movie).and_return(movie)
+
+      results = described_class.send(:tmdb_movie_recommendations, user, tmdb_client)
+
+      expect(results).to all(be_a(Movie))
+    end
+
+    it "handles tmdb genre discoveries" do
+      tmdb_client = instance_double(Tmdb::Client)
+      movie = build(:movie, tmdb_id: 20)
+      allow(described_class).to receive(:dominant_genres).and_return([ "Action" ])
+      allow(described_class).to receive(:tmdb_genre_ids).and_return([ 28 ])
+      allow(described_class).to receive(:fetch_tmdb_collection).and_return([ { 'id' => 20 } ])
+      allow(described_class).to receive(:upsert_tmdb_movie).and_return(movie)
+
+      results = described_class.send(:tmdb_genre_discoveries, user, tmdb_client)
+
+      expect(results).to eq([ movie ])
+    end
+
+    it "returns all people when role is unrecognized" do
+      tmdb_client = instance_double(Tmdb::Client)
+      allow(tmdb_client).to receive(:get).with("/search/person", anything).and_return({
+        "results" => [ { "known_for_department" => "Other" } ]
+      })
+
+      people = described_class.send(:search_tmdb_person, tmdb_client, "Name", role: :other)
+
+      expect(people.size).to eq(1)
+    end
+  end
 end

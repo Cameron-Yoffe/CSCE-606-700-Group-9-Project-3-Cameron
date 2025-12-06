@@ -252,7 +252,7 @@ module Recommender
       end
 
       def search_tmdb_person(client, name, role: nil)
-        response = client.get("/search/person", query: { query: name, include_adult: false })
+        response = client.get("/search/person", { query: name, include_adult: false })
         Array(response["results"]).select do |person|
           next true unless role
 
