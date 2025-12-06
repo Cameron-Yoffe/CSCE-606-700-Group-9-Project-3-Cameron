@@ -134,5 +134,21 @@ RSpec.describe LetterboxdRatingsImporter do
 
       expect(importer.send(:build_review, row)).to be_nil
     end
+
+    it 'returns error status when rating is invalid' do
+      allow_any_instance_of(Rating).to receive(:save).and_return(false)
+      allow_any_instance_of(Rating).to receive_message_chain(:errors, :full_messages).and_return(["is invalid"])
+
+      importer = described_class.new(user)
+
+      csv_content = <<~CSV
+        Date,Name,Year,Letterboxd URI,Rating
+        2024-01-01,Inception,2010,https://example.com,4.5
+      CSV
+
+      result = importer.import(StringIO.new(csv_content))
+
+      expect(result.errors).to include("is invalid")
+    end
   end
 end

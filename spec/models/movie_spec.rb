@@ -41,6 +41,19 @@ RSpec.describe Movie, type: :model do
       movie = build(:movie, genres: '[{"label": "Mystery"}]')
       expect(movie.genre_names).to eq([])
     end
+
+    it 'returns genre names from hash input' do
+      movie = build(:movie, genres: { name: 'Documentary' })
+
+      expect(movie.genre_names).to eq(['{name: "Documentary"}'])
+    end
+
+    it 'falls back to raw genres for unsupported types' do
+      movie = build(:movie)
+      allow(movie).to receive(:genres).and_return(123)
+
+      expect(movie.genre_names).to eq(['123'])
+    end
   end
 
   describe '#poster_image_url' do

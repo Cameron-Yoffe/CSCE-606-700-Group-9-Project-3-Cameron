@@ -142,6 +142,34 @@ RSpec.describe LetterboxdImportBase do
         expect { importer.import(csv_file) }.not_to raise_error
       end
     end
+
+    it 'raises ImportError when CSV support is unavailable' do
+      importer = described_class.new(user)
+      allow(importer).to receive(:require).with("csv").and_raise(LoadError.new("missing csv"))
+
+      expect { importer.import(StringIO.new("name")) }
+        .to raise_error(LetterboxdImportBase::ImportError, /CSV parsing is unavailable/)
+    end
+
+    it 're-raises ImportError raised inside import flow' do
+      importer = described_class.new(user)
+      allow(importer).to receive(:ensure_csv_support!).and_raise(LetterboxdImportBase::ImportError.new("boom"))
+
+      expect { importer.import(StringIO.new("name")) }
+        .to raise_error(LetterboxdImportBase::ImportError, /boom/)
+    end
+
+    it 're-raises unexpected errors from import' do
+      importer_class = Class.new(described_class) do
+        def import_row(_row)
+          raise StandardError, 'unexpected'
+        end
+      end
+
+      importer = importer_class.new(user)
+
+      expect { importer.import(StringIO.new("Name\nTest")) }.to raise_error(StandardError, /unexpected/)
+    end
   end
 
   describe 'TMDB integration' do
@@ -547,6 +575,31 @@ RSpec.describe LetterboxdImportBase do
       end
     end
 
+    describe '#build_release_date' do
+      let(:release_date_importer) do
+        Class.new(described_class) do
+          public :build_release_date
+
+          def import_row(row)
+            { status: :imported }
+          end
+        end
+      end
+
+      it 'builds date from year' do
+        importer = release_date_importer.new(user)
+
+        expect(importer.build_release_date(2000)).to eq(Date.new(2000, 1, 1))
+      end
+
+      it 'returns nil for invalid year' do
+        importer = release_date_importer.new(user)
+        allow(Date).to receive(:new).with(-1, 1, 1).and_raise(ArgumentError)
+
+        expect(importer.build_release_date(-1)).to be_nil
+      end
+    end
+
     describe 'utility helpers' do
       let(:helper_importer) do
         Class.new(described_class) do
@@ -563,6 +616,15 @@ RSpec.describe LetterboxdImportBase do
         raw = "Title \xC0".dup.force_encoding("ASCII-8BIT")
 
         expect(importer.safe_string(raw)).to eq("Title")
+      end
+
+      it 'returns empty string when encoding fails' do
+        importer = helper_importer.new(user)
+        failing_value = double
+        encoding_error = Encoding::InvalidByteSequenceError.allocate
+        allow(failing_value).to receive_message_chain(:to_s, :encode).and_raise(encoding_error)
+
+        expect(importer.safe_string(failing_value)).to eq("")
       end
 
       it 'handles parse_tmdb_date errors gracefully' do

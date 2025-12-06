@@ -34,6 +34,29 @@ RSpec.describe WatchlistsController, type: :controller do
       expect(response).to redirect_to(movies_path)
       expect(flash[:notice]).to eq("Added to your library")
     end
+
+    it "renders error flash when creation fails" do
+      session[:user_id] = user.id
+      request.env["HTTP_REFERER"] = movies_path
+
+      allow_any_instance_of(Watchlist).to receive(:persisted?).and_return(false)
+
+      post :create, params: { tmdb_id: 123, title: "Test" }
+
+      expect(response).to redirect_to(movies_path)
+      expect(flash[:alert]).to eq("Could not add to library")
+    end
+
+    it "renders turbo stream error when creation fails" do
+      session[:user_id] = user.id
+
+      allow_any_instance_of(Watchlist).to receive(:persisted?).and_return(false)
+
+      post :create, format: :turbo_stream, params: { tmdb_id: 123, title: "Test" }
+
+      expect(response.media_type).to start_with("text/vnd.turbo-stream")
+      expect(response.body).to include("turbo-stream")
+    end
   end
 
   describe "#destroy" do

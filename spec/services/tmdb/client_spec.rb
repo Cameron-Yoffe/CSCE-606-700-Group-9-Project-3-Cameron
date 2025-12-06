@@ -83,6 +83,16 @@ RSpec.describe Tmdb::Client do
       expect { described_class.new(api_key: nil) }
         .to raise_error(Tmdb::AuthenticationError, /missing/i)
     end
+
+    it "exposes shared mutex and default interval" do
+      allow(Rails.application.config.x.tmdb).to receive(:request_interval).and_return(1.25)
+
+      mutex = described_class.mutex
+
+      expect(mutex).to be_a(Mutex)
+      expect(described_class.default_request_interval).to eq(1.25)
+      expect(described_class.mutex).to eq(mutex)
+    end
   end
 
   describe "#get error handling" do

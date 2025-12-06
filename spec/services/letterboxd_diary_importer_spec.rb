@@ -93,6 +93,11 @@ RSpec.describe LetterboxdDiaryImporter do
       end
 
       it 'marks rewatches correctly' do
+        client = instance_double(Tmdb::Client)
+        allow(Tmdb::Client).to receive(:new).and_return(client)
+        allow(client).to receive(:get).and_return({ 'results' => [] })
+        allow(client).to receive(:movie).and_return({ 'id' => movie.tmdb_id, 'title' => movie.title })
+
         importer = described_class.new(user)
 
         result = importer.import(csv_file)
@@ -119,6 +124,17 @@ RSpec.describe LetterboxdDiaryImporter do
 
         # At minimum it should not fail
         expect(result.skipped).to be >= 0
+      end
+
+      it 'returns skipped status when duplicate is detected' do
+        importer = described_class.new(user)
+        row = CSV::Row.new(%w[Name Watched\ Date Year], [ movie.title, "2024-01-15", movie.release_date&.year ])
+        allow(importer).to receive(:find_or_create_movie).and_return(movie)
+        allow(importer).to receive(:duplicate_entry?).and_return(true)
+
+        result = importer.send(:import_row, row)
+
+        expect(result).to eq({ status: :skipped })
       end
     end
 
@@ -182,6 +198,22 @@ RSpec.describe LetterboxdDiaryImporter do
         expect(importer.send(:parsed_tags, nil)).to be_nil
         expect(importer.send(:parsed_tags, "")).to be_nil
       end
+    end
+
+    it 'returns error status when diary entry is invalid' do
+      allow_any_instance_of(DiaryEntry).to receive(:save).and_return(false)
+      allow_any_instance_of(DiaryEntry).to receive_message_chain(:errors, :full_messages).and_return(["is invalid"])
+
+      importer = described_class.new(user)
+
+      csv_content = <<~CSV
+        Date,Name,Year,Letterboxd URI,Rating,Rewatch,Tags,Watched Date
+        2024-01-01,Inception,2010,https://example.com,4.5,Yes,"dreamy, sci-fi",2024-01-01
+      CSV
+
+      result = importer.import(StringIO.new(csv_content))
+
+      expect(result.errors).to include("is invalid")
     end
   end
 end
