@@ -13,8 +13,33 @@ Then('I should see star rating buttons') do
 end
 
 When('I set a rating of {int} out of {int}') do |rating, max|
-  # Set the rating value by filling the hidden field
-  find('.rating-value-input', visible: false).set(rating)
+  input = find('input.rating-value-input', visible: :all)
+
+  # Prefer JS to avoid interacting with the hidden input in Selenium drivers
+  begin
+    page.execute_script(<<~JS, input, rating)
+      const input = arguments[0];
+      const rating = arguments[1];
+
+      input.value = rating;
+
+      const form = input.closest('form');
+      if (form) {
+        form.dataset.currentRating = rating;
+
+        if (typeof updateStarDisplay === 'function') {
+          updateStarDisplay(form, rating);
+        }
+      }
+
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+    JS
+  rescue Capybara::NotSupportedByDriverError
+    # Rack::Test and other non-JS drivers do not support execute_script
+    # Set the hidden rating value directly so non-JS drivers work
+    input.set(rating)
+  end
 end
 
 Given('I have rated {string} with {int} out of {int}') do |movie_title, rating, max|
