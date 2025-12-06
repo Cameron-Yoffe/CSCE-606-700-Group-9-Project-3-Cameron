@@ -36,6 +36,7 @@
 # Ignore compiled frontend assets.
 /app/assets/builds/*
 !/app/assets/builds/.keep
+!/app/assets/builds/tailwind.css
 /node_modules
 
 # Ignore coverage reports
