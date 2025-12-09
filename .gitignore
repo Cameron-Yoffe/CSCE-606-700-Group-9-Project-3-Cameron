@@ -4,6 +4,8 @@
 # belong in git's global ignore instead:
 # `$XDG_CONFIG_HOME/git/ignore` or `~/.config/git/ignore`
 
+config/credentials.yml.enc
+
 # Ignore bundler config.
 /.bundle
 
@@ -48,3 +50,4 @@
 
 .bundle/
 .idea/
+

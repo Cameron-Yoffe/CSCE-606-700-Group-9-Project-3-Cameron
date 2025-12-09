@@ -21,6 +21,18 @@ This document explains how to go from a fresh clone to a deployed of the Movie D
 
 2. **Configure TMDB**
     - Set `TMDB_API_KEY` in your shell (or `.env.local`), **or** add it via `bin/rails credentials:edit` under `tmdb.api_key`.
+   
+    - For alt commands:
+    ```
+   EDITOR=nano bin/rails credentials:edit
+   ```
+
+    Format the credentials file like so:
+    
+    ```yaml
+    tmdb:
+      api_key: your_tmdb_api_key_here
+    ```
 3. **Run the app**
    ```bash
    bin/dev
