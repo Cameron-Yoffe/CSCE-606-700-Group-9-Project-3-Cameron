@@ -8,7 +8,7 @@ This document explains how to go from a fresh clone to a deployed of the Movie D
 - SQLite (default), or configure another Rails-supported database
 - Bundler (`gem install bundler`)
 - TMDB API key for search/recommendations
-  - Use this key for easier grading: 9ee1e9af5ccf586991e69709215e4740
+  - The app defaults to the grading key `9ee1e9af5ccf586991e69709215e4740` so no setup is required.
 
 ## Local setup (zero to running)
 1. **Clone and install**
@@ -19,20 +19,21 @@ This document explains how to go from a fresh clone to a deployed of the Movie D
    ```
    The setup task installs gems, installs npm packages, prepares the database, and boots the dev server unless `--skip-server` is supplied.
 
-2. **Configure TMDB**
-    - Set `TMDB_API_KEY` in your shell (or `.env.local`), **or** add it via `bin/rails credentials:edit` under `tmdb.api_key`.
-   
-    - For alt commands:
-    ```
-   EDITOR=nano bin/rails credentials:edit
-   ```
+2. **Configure TMDB (optional)**
+    - Out of the box, the app falls back to the grading key that is already set.
+    - To override it, set `TMDB_API_KEY` in your shell (or `.env.local`), **or** add it via `bin/rails credentials:edit` under `tmdb.api_key`.
 
-    Format the credentials file like so:
-    
-    ```yaml
-    tmdb:
-      api_key: your_tmdb_api_key_here
-    ```
+      Alternative command to edit credentials:
+      ```
+      EDITOR=nano bin/rails credentials:edit
+      ```
+
+      Format the credentials file like so:
+
+      ```yaml
+      tmdb:
+        api_key: your_tmdb_api_key_here
+      ```
 3. **Run the app**
    ```bash
    bin/dev
