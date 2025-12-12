@@ -1,6 +1,7 @@
 class DiaryEntriesController < ApplicationController
   before_action :require_login
   before_action :set_diary_entry, only: %i[show edit update destroy]
+   before_action :set_movies, only: %i[new create edit update]
 
   def index
     @diary_entries = current_user.diary_entries.includes(:movie).order(watched_date: :desc)
@@ -11,7 +12,6 @@ class DiaryEntriesController < ApplicationController
 
   def new
     @movie = Movie.find_by(id: params[:movie_id])
-    @movies = Movie.order(:title)
     @diary_entry = DiaryEntry.new(watched_date: Date.today)
   end
 
@@ -72,5 +72,9 @@ class DiaryEntriesController < ApplicationController
 
   def remove_from_watchlist(movie)
     current_user.watchlists.where(movie_id: movie.id).destroy_all
+  end
+
+  def set_movies
+    @movies = Movie.order(:title)
   end
 end
