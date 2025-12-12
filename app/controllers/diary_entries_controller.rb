@@ -11,6 +11,7 @@ class DiaryEntriesController < ApplicationController
 
   def new
     @movie = Movie.find_by(id: params[:movie_id])
+    @movies = Movie.order(:title)
     @diary_entry = DiaryEntry.new(watched_date: Date.today)
   end
 
