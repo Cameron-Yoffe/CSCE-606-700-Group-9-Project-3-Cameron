@@ -1,7 +1,8 @@
 <nav class="bg-white shadow-sm">
   <div class="container mx-auto px-4 py-3 flex items-center justify-between">
     <div class="flex items-center space-x-6">
-      <% brand_label = "Movie Diary (over 1,119,417 movies available!)" %>
+      <% movie_count = (Movie.count rescue nil) %>
+      <% brand_label = movie_count ? "Movie Diary (over #{number_with_delimiter(movie_count)} movies stored!)" : "Movie Diary" %>
       <%= link_to brand_label, logged_in? ? dashboard_path : root_path, class: "text-xl font-bold text-gray-900" %>
       <div class="hidden md:flex items-center space-x-4 text-sm font-medium text-gray-700">
         <%= link_to "Movies", movies_path, class: "hover:text-indigo-600" %>
